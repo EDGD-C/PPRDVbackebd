@@ -28,16 +28,56 @@ exports.login = async ({ email, password }) => {
     throw new Error('Identifiants invalides');
   }
   
-  return { 
-    user: {
-      id: user.id,
-      uuid: user.uuid,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      isActif: user.isActif,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt
-    }
+  // Préparer les données utilisateur (sans le mot de passe)
+  const userData = {
+    id: user.id,
+    uuid: user.uuid,
+    username: user.username,
+    email: user.email,
+    role: user.role,
+    isActif: user.isActif,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt
   };
+  
+  return { user: userData };
+};
+
+/**
+ * Prépare les données utilisateur pour la session et le token JWT
+ */
+exports.prepareUserData = (user) => {
+  return {
+    id: user.id,
+    uuid: user.uuid,
+    username: user.username,
+    email: user.email,
+    role: user.role,
+    isActif: user.isActif
+  };
+};
+
+/**
+ * Vérifie si l'utilisateur est connecté via la session
+ */
+exports.checkSessionAuth = (request) => {
+  return request.session && request.session.get('user');
+};
+
+/**
+ * Déconnecte l'utilisateur en détruisant sa session
+ */
+exports.logout = async (request) => {
+  return new Promise((resolve, reject) => {
+    if (request.session) {
+      request.session.destroy(err => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(true);
+      });
+    } else {
+      resolve(false);
+    }
+  });
 }; 

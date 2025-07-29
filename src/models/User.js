@@ -41,7 +41,7 @@ const User = sequelize.define('User', {
 }, {
   timestamps: true,
   tableName: 'users',
-  // Méthodes d'instance
+  // instance methods
   instanceMethods: {
     isAdmin() {
       return this.role === 'admin';
@@ -52,7 +52,7 @@ const User = sequelize.define('User', {
   },
 });
 
-// Méthodes d'instance (syntaxe moderne)
+// instance methods (modern syntax)
 User.prototype.isAdmin = function() {
   return this.role === 'admin';
 };
@@ -61,7 +61,7 @@ User.prototype.isActive = function() {
   return this.isActif;
 };
 
-// Méthodes de classe
+// class methods
 User.findByUuid = function(uuid) {
   return this.findOne({ where: { uuid } });
 };

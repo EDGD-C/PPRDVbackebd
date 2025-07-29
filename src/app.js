@@ -19,6 +19,9 @@ fastify.addContentTypeParser('application/json', { parseAs: 'string' }, function
 fastify.register(require('./plugins/database'))
 fastify.register(require('./plugins/cors'))
 
+// Register session plugin (before auth)
+fastify.register(require('./plugins/session'))
+
 // Register content parsing (required for request.body)
 fastify.register(require('@fastify/formbody'))
 
@@ -33,6 +36,21 @@ fastify.register(require('./routes/users'), { prefix: '/api/users' })
 // Add a simple test route (no auth required)
 fastify.get('/test', async (request, reply) => {
   return { message: 'Server is working', timestamp: new Date().toISOString() };
+});
+
+// Add a session test route
+fastify.get('/session-test', async (request, reply) => {
+  // Incrémenter un compteur dans la session
+  const count = request.session.get('count') || 0;
+  request.session.set('count', count + 1);
+  request.session.set('lastVisit', new Date().toISOString());
+  
+  return { 
+    message: 'Session test',
+    sessionId: request.session.sessionId,
+    visits: count + 1,
+    lastVisit: request.session.get('lastVisit')
+  };
 });
 
 module.exports = fastify

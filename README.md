@@ -5,7 +5,7 @@ A modern Node.js REST API built with Fastify framework, featuring user authentic
 ## Features
 
 - 🚀 **Fast Performance**: Built on Fastify for high-performance HTTP requests
-- 🔐 **JWT Authentication**: Secure token-based authentication system
+- 🔐 **JWT Authentication**: Secure token-based authentication system with session support
 - 👥 **Role-Based Access Control**: User and admin roles with permission management
 - 📊 **Database Integration**: MySQL with Sequelize ORM
 - 📚 **API Documentation**: Auto-generated Swagger/OpenAPI documentation
@@ -20,7 +20,7 @@ A modern Node.js REST API built with Fastify framework, featuring user authentic
 - **Framework**: Fastify 5.x
 - **Database**: MySQL
 - **ORM**: Sequelize 7.x
-- **Authentication**: JWT (JSON Web Tokens)
+- **Authentication**: JWT (JSON Web Tokens) and Session-based authentication
 - **Password Hashing**: bcryptjs
 - **Documentation**: Swagger UI
 - **Migrations**: Umzug
@@ -38,7 +38,7 @@ Before running this application, make sure you have the following installed:
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/EDGD-C/PPRDVbackebd.git
    cd pprdv
    ```
 
@@ -126,11 +126,23 @@ Once the server is running, access the interactive API documentation at:
 
 ## Authentication
 
-The API uses JWT (JSON Web Tokens) for authentication. Include the token in the Authorization header:
+The API uses both JWT (JSON Web Tokens) and sessions for authentication:
+
+### JWT Authentication
+Include the token in the Authorization header:
 
 ```
 Authorization: Bearer <your-jwt-token>
 ```
+
+### Session Authentication
+The API also supports session-based authentication using cookies. When you log in, a session is automatically created and maintained via cookies. This provides:
+
+- Seamless authentication across page reloads
+- Protection against XSS attacks (with httpOnly cookies)
+- Automatic session expiration handling
+
+Both authentication methods work simultaneously - you can use either JWT tokens or session cookies to authenticate requests.
 
 ### User Roles
 
@@ -146,6 +158,7 @@ You can configure the application using the following environment variables:
 | `PORT` | Server port | 3000 |
 | `HOST` | Server host | localhost |
 | `JWT_SECRET` | JWT signing secret | (required) |
+| `SESSION_SECRET` | Session cookie signing secret | (required) |
 | `DB_HOST` | Database host | localhost |
 | `DB_PORT` | Database port | 3306 |
 | `DB_NAME` | Database name | pprdv |
@@ -157,6 +170,7 @@ Create a `.env` file in the root directory:
 PORT=3000
 HOST=localhost
 JWT_SECRET=your-super-secret-jwt-key
+SESSION_SECRET=another-super-secret-key-for-sessions
 DB_HOST=localhost
 DB_PORT=3306
 DB_NAME=pprdv
@@ -182,6 +196,7 @@ pprdv/
 │   │   └── User.js         # User model
 │   ├── plugins/
 │   │   ├── auth.js         # JWT authentication
+│   │   ├── session.js      # Session management
 │   │   ├── cors.js         # CORS configuration
 │   │   ├── database.js     # Database plugin
 │   │   └── swagger.js      # API documentation
@@ -196,6 +211,36 @@ pprdv/
 ├── migrate.js             # Migration runner
 └── package.json
 ```
+
+## Session Management
+
+The API implements session management using `@fastify/session` and `@fastify/cookie`. Sessions provide:
+
+### Features
+
+- **Persistent Login**: Users stay logged in across page reloads
+- **Security**: Sessions are stored server-side with only a session ID in the cookie
+- **Dual Authentication**: Works alongside JWT for flexible authentication options
+- **Automatic Expiry**: Sessions automatically expire after inactivity
+
+### Session API Endpoints
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| GET | `/api/auth/session` | Get current session info | No |
+| POST | `/api/auth/logout` | Logout (destroy session) | No |
+| GET | `/session-test` | Test session counter | No |
+
+### Session Configuration
+
+Sessions can be configured through environment variables:
+
+- `SESSION_SECRET`: Secret used to sign the session cookie
+- `NODE_ENV`: When set to 'production', enables secure cookies (HTTPS only)
+
+### Session Storage
+
+By default, sessions are stored in memory. For production, you should implement a persistent session store like Redis or database storage.
 
 ## Getting Started
 

@@ -28,8 +28,8 @@ module.exports = async function (fastify, opts) {
   fastify.post('/register', {
     schema: {
       tags: ['Authentication'],
-      summary: 'Enregistrer un nouvel utilisateur',
-      description: 'Créer un compte utilisateur standard avec le rôle "user"',
+      summary: 'Register a new user',
+      description: 'Create a new user with the role "user"',
       body: {
         type: 'object',
         required: ['username', 'email', 'password'],
@@ -41,7 +41,7 @@ module.exports = async function (fastify, opts) {
       },
       response: {
         201: {
-          description: 'Utilisateur créé avec succès',
+          description: 'User created successfully',
           type: 'object',
           properties: {
             message: { type: 'string' },
@@ -49,7 +49,7 @@ module.exports = async function (fastify, opts) {
           }
         },
         400: {
-          description: 'Erreur de validation',
+          description: 'Validation error',
           ...errorSchema
         }
       }
@@ -64,7 +64,7 @@ module.exports = async function (fastify, opts) {
     try {
       const user = await authController.register({ username, email, password });
       reply.code(201).send({ 
-        message: 'Utilisateur créé avec succès',
+        message: 'User created successfully',
         user: {
           id: user.id,
           uuid: user.uuid,
@@ -75,86 +75,25 @@ module.exports = async function (fastify, opts) {
         }
       });
     } catch (err) {
-      console.log('Erreur register:', err);
+      console.log('Register error:', err);
       
-      // Gestion spécifique des erreurs Sequelize
+      // specific Sequelize error handling
       if (err.name === 'SequelizeUniqueConstraintError') {
         const field = err.errors[0].path;
         if (field === 'email') {
-          return reply.code(400).send({ error: 'Cet email est déjà utilisé' });
+          return reply.code(400).send({ error: 'This email is already in use' });
         } else if (field === 'username') {
-          return reply.code(400).send({ error: 'Ce nom d\'utilisateur est déjà pris' });
+          return reply.code(400).send({ error: 'This username is already taken' });
         }
-        return reply.code(400).send({ error: 'Ces données sont déjà utilisées' });
+        return reply.code(400).send({ error: 'These data are already in use' });
       }
       
       if (err.name === 'SequelizeValidationError') {
         const messages = err.errors.map(e => e.message).join(', ');
-        return reply.code(400).send({ error: `Erreur de validation: ${messages}` });
+        return reply.code(400).send({ error: `Validation error: ${messages}` });
       }
       
-      reply.code(400).send({ error: err.message || 'Erreur lors de la création du compte' });
-    }
-  });
-
-  // Créer le premier administrateur (seulement si aucun admin n'existe)
-  fastify.post('/create-first-admin', {
-    schema: {
-      tags: ['Authentication'],
-      summary: 'Créer le premier administrateur',
-      description: 'Créer le premier compte administrateur du système (disponible uniquement si aucun admin n\'existe)',
-      body: {
-        type: 'object',
-        required: ['username', 'email', 'password'],
-        properties: {
-          username: { type: 'string', minLength: 3, maxLength: 50 },
-          email: { type: 'string', format: 'email' },
-          password: { type: 'string', minLength: 6 }
-        }
-      },
-      response: {
-        201: {
-          description: 'Premier administrateur créé avec succès',
-          type: 'object',
-          properties: {
-            message: { type: 'string' },
-            user: userSchema
-          }
-        },
-        400: {
-          description: 'Erreur - Administrateur déjà existant ou validation échouée',
-          ...errorSchema
-        }
-      }
-    }
-  }, async (request, reply) => {
-    const { username, email, password } = request.body;
-    
-    if (!username || !email || !password) {
-      return reply.code(400).send({ error: 'Tous les champs sont obligatoires' });
-    }
-
-    try {
-      // Vérifier s'il existe déjà des administrateurs
-      const existingAdmins = await User.findAdmins();
-      if (existingAdmins.length > 0) {
-        return reply.code(400).send({ error: 'Des administrateurs existent déjà dans le système' });
-      }
-
-      const user = await authController.register({ username, email, password, role: 'admin' });
-      reply.code(201).send({ 
-        message: 'Premier administrateur créé avec succès',
-        user: {
-          id: user.id,
-          uuid: user.uuid,
-          username: user.username,
-          email: user.email,
-          role: user.role,
-          isActif: user.isActif
-        }
-      });
-    } catch (err) {
-      reply.code(400).send({ error: err.message });
+      reply.code(400).send({ error: err.message || 'Error creating account' });
     }
   });
 
@@ -162,8 +101,8 @@ module.exports = async function (fastify, opts) {
   fastify.post('/login', {
     schema: {
       tags: ['Authentication'],
-      summary: 'Se connecter',
-      description: 'Authentifier un utilisateur et obtenir un token JWT',
+      summary: 'Login',
+      description: 'Authenticate a user and get a JWT token + session',
       body: {
         type: 'object',
         required: ['email', 'password'],
@@ -174,7 +113,7 @@ module.exports = async function (fastify, opts) {
       },
       response: {
         200: {
-          description: 'Connexion réussie',
+          description: 'Login successful',
           type: 'object',
           properties: {
             message: { type: 'string' },
@@ -183,7 +122,7 @@ module.exports = async function (fastify, opts) {
           }
         },
         401: {
-          description: 'Identifiants invalides ou compte inactif',
+          description: 'Invalid credentials or inactive account',
           ...errorSchema
         }
       }
@@ -192,46 +131,95 @@ module.exports = async function (fastify, opts) {
     const { email, password } = request.body;
     
     if (!email || !password) {
-      return reply.code(400).send({ error: 'Email et mot de passe sont obligatoires' });
+      return reply.code(400).send({ error: 'Email and password are required' });
     }
 
     try {
       const result = await authController.login({ email, password });
-      const token = fastify.jwt.sign({ 
-        id: result.user.id, 
-        uuid: result.user.uuid,
-        username: result.user.username,
-        email: result.user.email,
-        role: result.user.role,
-        isActif: result.user.isActif
-      });
+      const userData = authController.prepareUserData(result.user);
+      
+      // Créer le token JWT
+      const token = fastify.jwt.sign(userData);
+      
+      // Stocker les données utilisateur dans la session
+      request.session.set('user', userData);
+      request.session.set('loginTime', new Date().toISOString());
       
       reply.send({ 
-        message: 'Connexion réussie',
+        message: 'Login successful',
         token,
-        user: {
-          id: result.user.id,
-          uuid: result.user.uuid,
-          username: result.user.username,
-          email: result.user.email,
-          role: result.user.role,
-          isActif: result.user.isActif
-        }
+        user: userData
       });
     } catch (err) {
       reply.code(401).send({ error: err.message });
     }
   });
 
-  // Vérifier le statut du système (combien d'admins existent)
+  // Logout route
+  fastify.post('/logout', {
+    schema: {
+      tags: ['Authentication'],
+      summary: 'Logout',
+      description: 'Logout the current user by destroying the session',
+      response: {
+        200: {
+          description: 'Logout successful',
+          type: 'object',
+          properties: {
+            message: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      await authController.logout(request);
+      reply.send({ message: 'Logout successful' });
+    } catch (err) {
+      reply.code(500).send({ error: err.message });
+    }
+  });
+
+  // Get current session info
+  fastify.get('/session', {
+    schema: {
+      tags: ['Authentication'],
+      summary: 'Get session info',
+      description: 'Get information about the current session',
+      response: {
+        200: {
+          description: 'Session information',
+          type: 'object',
+          properties: {
+            isAuthenticated: { type: 'boolean' },
+            user: userSchema,
+            sessionId: { type: 'string' },
+            loginTime: { type: 'string', format: 'date-time' }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    const user = request.session.get('user');
+    const loginTime = request.session.get('loginTime');
+    
+    reply.send({
+      isAuthenticated: !!user,
+      user: user || null,
+      sessionId: request.session.sessionId,
+      loginTime: loginTime || null
+    });
+  });
+
+  // check the system status (how many admins exist)
   fastify.get('/system-status', {
     schema: {
       tags: ['Authentication'],
-      summary: 'Statut du système',
-      description: 'Obtenir des informations sur l\'état du système (nombre d\'administrateurs)',
+      summary: 'System status',
+      description: 'Get information about the system status (number of admins)',
       response: {
         200: {
-          description: 'Informations système',
+          description: 'System information',
           type: 'object',
           properties: {
             totalUsers: { type: 'integer' },
