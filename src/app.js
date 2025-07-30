@@ -32,6 +32,8 @@ fastify.register(require('./plugins/swagger')) // Swagger documentation
 // Register routes
 fastify.register(require('./routes/auth'), { prefix: '/api/auth' })
 fastify.register(require('./routes/users'), { prefix: '/api/users' })
+fastify.register(require('./routes/entreprises'), { prefix: '/api/entreprises' })
+fastify.register(require('./routes/clients'), { prefix: '/api/clients' })
 
 // Add a simple test route (no auth required)
 fastify.get('/test', async (request, reply) => {

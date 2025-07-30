@@ -8,8 +8,11 @@
   },
   "scripts": {
     "test": "node --test test/**/*.test.js",
-    "start": "fastify start -l info app.js",
-    "dev": "fastify start -w -l info -P app.js"
+    "start": "node start.js",
+    "dev": "node start.js",
+    "server": "node src/server.js",
+    "init-db": "node init-db.js",
+    "create-db": "node create-database.js"
   },
   "keywords": [],
   "author": "",

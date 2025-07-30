@@ -7,28 +7,28 @@ exports.register = async (data) => {
     username: data.username,
     email: data.email,
     password: hashedPassword,
-    role: data.role || 'user', // Par défaut 'user'
-    isActif: true, // Nouveau compte activé par défaut
+    role: data.role || 'user', // default user
+    isActif: true, // new account activated by default
   });
 };
 
 exports.login = async ({ email, password }) => {
   const user = await User.findOne({ where: { email } });
   if (!user) {
-    throw new Error('Identifiants invalides');
+    throw new Error('Invalid credentials');
   }
   
-  // Vérifier si le compte est actif
+  // Check if the account is active
   if (!user.isActif) {
-    throw new Error('Compte désactivé');
+    throw new Error('Account deactivated');
   }
   
   const valid = await bcrypt.compare(password, user.password);
   if (!valid) {
-    throw new Error('Identifiants invalides');
+    throw new Error('Invalid credentials');
   }
   
-  // Préparer les données utilisateur (sans le mot de passe)
+  // Prepare user data (without password)
   const userData = {
     id: user.id,
     uuid: user.uuid,
@@ -44,7 +44,7 @@ exports.login = async ({ email, password }) => {
 };
 
 /**
- * Prépare les données utilisateur pour la session et le token JWT
+ * Prepare user data for session and JWT token
  */
 exports.prepareUserData = (user) => {
   return {
@@ -58,14 +58,14 @@ exports.prepareUserData = (user) => {
 };
 
 /**
- * Vérifie si l'utilisateur est connecté via la session
+ * Check if the user is connected via the session
  */
 exports.checkSessionAuth = (request) => {
   return request.session && request.session.get('user');
 };
 
 /**
- * Déconnecte l'utilisateur en détruisant sa session
+ * Logout the user by destroying their session
  */
 exports.logout = async (request) => {
   return new Promise((resolve, reject) => {

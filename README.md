@@ -1,304 +1,180 @@
-# PPRDV
+# PPRDV - API de Gestion des Rendez-vous
 
-A modern Node.js REST API built with Fastify framework, featuring user authentication, role-based access control, and MySQL database integration.
+Une API REST complète construite avec Fastify pour la gestion des rendez-vous, des entreprises et des clients.
 
-## Features
+## 🚀 Fonctionnalités
 
-- 🚀 **Fast Performance**: Built on Fastify for high-performance HTTP requests
-- 🔐 **JWT Authentication**: Secure token-based authentication system with session support
-- 👥 **Role-Based Access Control**: User and admin roles with permission management
-- 📊 **Database Integration**: MySQL with Sequelize ORM
-- 📚 **API Documentation**: Auto-generated Swagger/OpenAPI documentation
-- 🔄 **Database Migrations**: Automated database schema management with Umzug
-- ✅ **Input Validation**: Request validation with JSON schemas
-- 🌐 **CORS Support**: Cross-origin resource sharing enabled
-- 🔧 **Environment Configuration**: Flexible configuration with environment variables
+- **Authentification JWT** avec sessions
+- **Gestion des utilisateurs** (administrateurs)
+- **Gestion des entreprises** avec SIRET
+- **Gestion des clients** liés aux entreprises
+- **API REST** documentée avec Swagger
+- **Base de données MySQL** avec Sequelize ORM
+- **Sécurité** avec validation des entrées et contrôle d'accès
 
-## Technology Stack
+## 📋 Prérequis
 
-- **Runtime**: Node.js
-- **Framework**: Fastify 5.x
-- **Database**: MySQL
-- **ORM**: Sequelize 7.x
-- **Authentication**: JWT (JSON Web Tokens) and Session-based authentication
-- **Password Hashing**: bcryptjs
-- **Documentation**: Swagger UI
-- **Migrations**: Umzug
-- **Testing**: Node.js built-in test runner
+- Node.js (v18+)
+- MySQL (v8.0+)
+- npm ou yarn
 
-## Prerequisites
+## 🛠️ Installation
 
-Before running this application, make sure you have the following installed:
-
-- Node.js (v18 or higher)
-- MySQL Server (v8.0 or higher)
-- npm or yarn package manager
-
-## Installation
-
-1. **Clone the repository**
+1. **Cloner le repository**
    ```bash
-   git clone https://github.com/EDGD-C/PPRDVbackebd.git
+   git clone <repository-url>
    cd pprdv
    ```
 
-2. **Install dependencies**
+2. **Installer les dépendances**
    ```bash
    npm install
    ```
 
-3. **Database Setup**
-   
-   Create a MySQL database:
-   ```sql
-   CREATE DATABASE pprdv;
+3. **Configurer les variables d'environnement**
+   Créez un fichier `.env` à la racine du projet :
+   ```env
+   # Configuration de la base de données
+   DB_HOST=localhost
+   DB_PORT=3306
+   DB_USER=root
+   DB_PASSWORD=votre_mot_de_passe
+   DB_NAME=pprdv
+
+   # Configuration JWT
+   JWT_SECRET=votre_secret_jwt_tres_long_et_complexe
+
+   # Configuration des sessions
+   SESSION_SECRET=votre_secret_session_tres_long_et_complexe
+
+   # Configuration du serveur
+   PORT=3000
+   NODE_ENV=development
    ```
 
-4. **Configure Database Connection**
-   
-   Edit `src/config/database.js` to match your MySQL configuration:
-   ```javascript
-   const sequelize = new Sequelize({
-     dialect: MySqlDialect,
-     database: 'pprdv',     // Your database name
-     user: 'root',          // Your MySQL username
-     password: 'yourpass',  // Your MySQL password
-     host: 'localhost',
-     port: 3306,
-   });
-   ```
-
-5. **Run Database Migrations**
+4. **Initialiser la base de données**
    ```bash
-   node migrate.js
+   node init-db.js
    ```
 
-## Usage
+5. **Démarrer le serveur**
+   ```bash
+   node src/server.js
+   ```
 
-### Development Mode
-```bash
-npm run dev
-```
-This starts the server with auto-reload on file changes.
-
-### Production Mode
-```bash
-npm start
-```
-
-### Testing
-```bash
-npm test
-```
-
-The server will start on `http://localhost:3000` by default.
-
-## API Documentation
-
-Once the server is running, access the interactive API documentation at:
-- **Swagger UI**: `http://localhost:3000/documentation`
-
-## API Endpoints
-
-### Authentication
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/api/auth/register` | Register a new user | No |
-| POST | `/api/auth/login` | User login | No |
-| POST | `/api/auth/create-first-admin` | Create first admin user | No |
-| GET | `/api/auth/system-status` | Get system status | No |
-
-### Users
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/users` | Get all users | Admin |
-| GET | `/api/users/profile` | Get current user profile | Yes |
-| PUT | `/api/users/profile` | Update user profile | Yes |
-| DELETE | `/api/users/:id` | Delete user | Admin |
-
-### Test Endpoints
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/test` | Server health check | No |
-
-## Authentication
-
-The API uses both JWT (JSON Web Tokens) and sessions for authentication:
-
-### JWT Authentication
-Include the token in the Authorization header:
-
-```
-Authorization: Bearer <your-jwt-token>
-```
-
-### Session Authentication
-The API also supports session-based authentication using cookies. When you log in, a session is automatically created and maintained via cookies. This provides:
-
-- Seamless authentication across page reloads
-- Protection against XSS attacks (with httpOnly cookies)
-- Automatic session expiration handling
-
-Both authentication methods work simultaneously - you can use either JWT tokens or session cookies to authenticate requests.
-
-### User Roles
-
-- **user**: Standard user with basic permissions
-- **admin**: Administrator with full access to user management
-
-## Environment Variables
-
-You can configure the application using the following environment variables:
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `PORT` | Server port | 3000 |
-| `HOST` | Server host | localhost |
-| `JWT_SECRET` | JWT signing secret | (required) |
-| `SESSION_SECRET` | Session cookie signing secret | (required) |
-| `DB_HOST` | Database host | localhost |
-| `DB_PORT` | Database port | 3306 |
-| `DB_NAME` | Database name | pprdv |
-| `DB_USER` | Database username | root |
-| `DB_PASS` | Database password | (empty) |
-
-Create a `.env` file in the root directory:
-```env
-PORT=3000
-HOST=localhost
-JWT_SECRET=your-super-secret-jwt-key
-SESSION_SECRET=another-super-secret-key-for-sessions
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=pprdv
-DB_USER=root
-DB_PASS=yourpassword
-```
-
-## Project Structure
+## 📚 Structure du Projet
 
 ```
 pprdv/
 ├── src/
-│   ├── app.js              # Main application setup
-│   ├── server.js           # Server startup
 │   ├── config/
-│   │   └── database.js     # Database configuration
+│   │   └── database.js          # Configuration Sequelize
 │   ├── controllers/
-│   │   ├── authController.js
-│   │   └── userController.js
+│   │   ├── authController.js    # Contrôleur d'authentification
+│   │   ├── userController.js    # Contrôleur des utilisateurs
+│   │   ├── entrepriseController.js # Contrôleur des entreprises
+│   │   └── clientController.js  # Contrôleur des clients
 │   ├── middleware/
-│   │   └── roleMiddleware.js
+│   │   └── roleMiddleware.js    # Middleware de contrôle d'accès
 │   ├── models/
-│   │   └── User.js         # User model
+│   │   ├── User.js             # Modèle utilisateur
+│   │   ├── Entreprise.js       # Modèle entreprise
+│   │   ├── Client.js           # Modèle client
+│   │   ├── associations.js     # Associations entre modèles
+│   │   └── index.js            # Point d'entrée des modèles
 │   ├── plugins/
-│   │   ├── auth.js         # JWT authentication
-│   │   ├── session.js      # Session management
-│   │   ├── cors.js         # CORS configuration
-│   │   ├── database.js     # Database plugin
-│   │   └── swagger.js      # API documentation
+│   │   ├── auth.js             # Plugin d'authentification JWT
+│   │   ├── cors.js             # Plugin CORS
+│   │   ├── database.js         # Plugin de base de données
+│   │   ├── session.js          # Plugin de gestion des sessions
+│   │   └── swagger.js          # Plugin de documentation API
 │   ├── routes/
-│   │   ├── auth.js         # Authentication routes
-│   │   └── users.js        # User management routes
-│   ├── schemas/            # JSON validation schemas
-│   ├── services/           # Business logic services
-│   └── utils/              # Utility functions
-├── migrations/             # Database migrations
-├── test/                   # Test files
-├── migrate.js             # Migration runner
-└── package.json
+│   │   ├── auth.js             # Routes d'authentification
+│   │   ├── users.js            # Routes des utilisateurs
+│   │   ├── entreprises.js      # Routes des entreprises
+│   │   └── clients.js          # Routes des clients
+│   └── server.js               # Point d'entrée de l'application
+├── migrations/                 # Migrations de base de données
+├── init-db.js                 # Script d'initialisation
+├── package.json
+└── README.md
 ```
 
-## Session Management
+## 🔐 Authentification
 
-The API implements session management using `@fastify/session` and `@fastify/cookie`. Sessions provide:
+### Compte administrateur par défaut
+- **Email**: admin@example.com
+- **Mot de passe**: admin123
 
-### Features
+### Endpoints d'authentification
+- `POST /api/auth/register` - Inscription d'un nouvel utilisateur
+- `POST /api/auth/login` - Connexion (JWT + session)
+- `POST /api/auth/logout` - Déconnexion
+- `GET /api/auth/session` - Informations de session
 
-- **Persistent Login**: Users stay logged in across page reloads
-- **Security**: Sessions are stored server-side with only a session ID in the cookie
-- **Dual Authentication**: Works alongside JWT for flexible authentication options
-- **Automatic Expiry**: Sessions automatically expire after inactivity
+## 📖 API Documentation
 
-### Session API Endpoints
+Une fois le serveur démarré, la documentation Swagger est disponible à :
+- **URL**: http://localhost:3000/documentation
+- **Interface**: Interface interactive pour tester les API
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/auth/session` | Get current session info | No |
-| POST | `/api/auth/logout` | Logout (destroy session) | No |
-| GET | `/session-test` | Test session counter | No |
+## 🗄️ Modèles de Données
 
-### Session Configuration
+### User (Administrateurs)
+- `id` - Identifiant unique
+- `uuid` - UUID unique
+- `username` - Nom d'utilisateur
+- `email` - Adresse email
+- `password` - Mot de passe hashé
+- `role` - Rôle (user/admin)
+- `isActif` - Statut actif/inactif
 
-Sessions can be configured through environment variables:
+### Entreprise
+- `id` - Identifiant unique
+- `uuid` - UUID unique
+- `nom` - Nom de l'entreprise
+- `description` - Description
+- `siret` - Numéro SIRET (unique)
 
-- `SESSION_SECRET`: Secret used to sign the session cookie
-- `NODE_ENV`: When set to 'production', enables secure cookies (HTTPS only)
+### Client
+- `id` - Identifiant unique
+- `uuid` - UUID unique
+- `nom` - Nom du client
+- `email` - Adresse email (unique)
+- `nomEntreprise` - Nom de l'entreprise du client
+- `description` - Description
+- `entrepriseId` - Référence vers l'entreprise
+- `isActif` - Statut actif/inactif
 
-### Session Storage
+## 🔧 Scripts Disponibles
 
-By default, sessions are stored in memory. For production, you should implement a persistent session store like Redis or database storage.
+- `node init-db.js` - Initialise la base de données avec les données de démonstration
+- `node src/server.js` - Démarre le serveur de développement
 
-## Getting Started
+## 🚨 Sécurité
 
-1. **First-time Setup**: After installation and database setup, create your first admin user:
-   ```bash
-   curl -X POST http://localhost:3000/api/auth/create-first-admin \
-     -H "Content-Type: application/json" \
-     -d '{
-       "username": "admin",
-       "email": "admin@example.com",
-       "password": "securepassword"
-     }'
-   ```
+- Mots de passe hashés avec bcrypt
+- JWT pour l'authentification API
+- Sessions pour la gestion des connexions
+- Validation des entrées avec Fastify
+- Contrôle d'accès basé sur les rôles
+- CORS configuré
 
-2. **Login**: Use the admin credentials to get a JWT token:
-   ```bash
-   curl -X POST http://localhost:3000/api/auth/login \
-     -H "Content-Type: application/json" \
-     -d '{
-       "email": "admin@example.com",
-       "password": "securepassword"
-     }'
-   ```
+## 📝 Notes de Développement
 
-3. **Access Protected Routes**: Use the returned token for authenticated requests:
-   ```bash
-   curl -X GET http://localhost:3000/api/users \
-     -H "Authorization: Bearer <your-jwt-token>"
-   ```
+- Les migrations Umzug sont disponibles mais l'approche `sequelize.sync()` est utilisée pour simplifier
+- L'application utilise les sessions pour une meilleure expérience utilisateur
+- Tous les endpoints sont documentés avec Swagger
+- La structure modulaire facilite l'ajout de nouvelles fonctionnalités
 
-## Database Migrations
+## 🤝 Contribution
 
-The project uses Umzug for database migrations. 
+1. Fork le projet
+2. Créez une branche pour votre fonctionnalité
+3. Committez vos changements
+4. Poussez vers la branche
+5. Ouvrez une Pull Request
 
-### Run Migrations
-```bash
-node migrate.js
-```
+## 📄 Licence
 
-### Rollback Last Migration
-```bash
-node migrate.js down
-```
-
-### Creating New Migrations
-
-1. Create a new migration file in the `migrations/` directory following the naming pattern: `YYYYMMDD-description.js`
-2. Follow the structure of existing migration files
-3. Run migrations to apply changes
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-<!-- ## Support
-
-For support, please open an issue in the repository or contact the development team.  -->
+Ce projet est sous licence MIT.

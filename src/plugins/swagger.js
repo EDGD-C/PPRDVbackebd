@@ -35,10 +35,10 @@ module.exports = fp(async function (fastify, opts) {
           name: 'Authentication',
           description: 'Endpoints pour l\'authentification et l\'enregistrement'
         },
-        {
-          name: 'Users',
-          description: 'Gestion des utilisateurs (routes protégées)'
-        },
+        // {
+        //   name: 'Users',
+        //   description: 'Gestion des utilisateurs (routes protégées)'
+        // },
         {
           name: 'Admin',
           description: 'Administration des utilisateurs (admin uniquement)'

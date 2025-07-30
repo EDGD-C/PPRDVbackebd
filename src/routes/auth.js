@@ -155,61 +155,36 @@ module.exports = async function (fastify, opts) {
     }
   });
 
-  // Logout route
-  fastify.post('/logout', {
-    schema: {
-      tags: ['Authentication'],
-      summary: 'Logout',
-      description: 'Logout the current user by destroying the session',
-      response: {
-        200: {
-          description: 'Logout successful',
-          type: 'object',
-          properties: {
-            message: { type: 'string' }
-          }
-        }
-      }
-    }
-  }, async (request, reply) => {
-    try {
-      await authController.logout(request);
-      reply.send({ message: 'Logout successful' });
-    } catch (err) {
-      reply.code(500).send({ error: err.message });
-    }
-  });
-
   // Get current session info
-  fastify.get('/session', {
-    schema: {
-      tags: ['Authentication'],
-      summary: 'Get session info',
-      description: 'Get information about the current session',
-      response: {
-        200: {
-          description: 'Session information',
-          type: 'object',
-          properties: {
-            isAuthenticated: { type: 'boolean' },
-            user: userSchema,
-            sessionId: { type: 'string' },
-            loginTime: { type: 'string', format: 'date-time' }
-          }
-        }
-      }
-    }
-  }, async (request, reply) => {
-    const user = request.session.get('user');
-    const loginTime = request.session.get('loginTime');
+  // fastify.get('/session', {
+  //   schema: {
+  //     tags: ['Authentication'],
+  //     summary: 'Get session info',
+  //     description: 'Get information about the current session',
+  //     response: {
+  //       200: {
+  //         description: 'Session information',
+  //         type: 'object',
+  //         properties: {
+  //           isAuthenticated: { type: 'boolean' },
+  //           user: userSchema,
+  //           sessionId: { type: 'string' },
+  //           loginTime: { type: 'string', format: 'date-time' }
+  //         }
+  //       }
+  //     }
+  //   }
+  // }, async (request, reply) => {
+  //   const user = request.session.get('user');
+  //   const loginTime = request.session.get('loginTime');
     
-    reply.send({
-      isAuthenticated: !!user,
-      user: user || null,
-      sessionId: request.session.sessionId,
-      loginTime: loginTime || null
-    });
-  });
+  //   reply.send({
+  //     isAuthenticated: !!user,
+  //     user: user || null,
+  //     sessionId: request.session.sessionId,
+  //     loginTime: loginTime || null
+  //   });
+  // });
 
   // check the system status (how many admins exist)
   fastify.get('/system-status', {
