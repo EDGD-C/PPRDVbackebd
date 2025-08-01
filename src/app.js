@@ -15,9 +15,16 @@ fastify.addContentTypeParser('application/json', { parseAs: 'string' }, function
   }
 })
 
+// Register CORS plugin
+fastify.register(require('@fastify/cors'), {
+  origin: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  credentials: true
+})
+
 // Register core plugins first
 fastify.register(require('./plugins/database'))
-fastify.register(require('./plugins/cors'))
+//fastify.register(require('./plugins/cors'))
 
 // Register session plugin (before auth)
 fastify.register(require('./plugins/session'))

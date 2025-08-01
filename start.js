@@ -13,7 +13,7 @@ async function checkDatabase() {
     console.log('   1. MySQL est démarré');
     console.log('   2. La base de données "pprdv" existe');
     console.log('   3. Les variables d\'environnement sont correctement configurées');
-    console.log('   4. Exécutez "node init-db.js" pour initialiser la base de données');
+    console.log('   4. Exécutez "node init-db-final.js" pour initialiser la base de données');
     return false;
   }
 }
@@ -23,7 +23,7 @@ async function startServer() {
   
   if (!dbOk) {
     console.log('\n🚀 Pour initialiser la base de données, exécutez :');
-    console.log('   node init-db.js');
+    console.log('   node init-db-final.js');
     process.exit(1);
   }
 

@@ -26,7 +26,7 @@ const Entreprise = sequelize.define('Entreprise', {
     allowNull: false,
     unique: true,
     validate: {
-      len: [14, 14], // Le numéro SIRET doit contenir exactement 14 chiffres
+      len: [14, 14],
       isNumeric: true
     }
   },

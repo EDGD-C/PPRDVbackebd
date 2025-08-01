@@ -17,11 +17,10 @@ const Client = sequelize.define('Client', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  email: {
-    type: DataTypes.STRING,
+  userId: {
+    type: DataTypes.INTEGER,
     allowNull: false,
-    unique: true,
-    validate: { isEmail: true },
+    unique: true
   },
   nomEntreprise: {
     type: DataTypes.STRING,
@@ -45,6 +44,7 @@ const Client = sequelize.define('Client', {
     defaultValue: true,
     allowNull: false,
   },
+
 }, {
   timestamps: true,
   tableName: 'clients',

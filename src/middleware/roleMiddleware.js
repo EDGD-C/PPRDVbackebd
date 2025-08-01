@@ -1,6 +1,31 @@
+/**
+ * There is no CORS middleware in this file.
+ * 
+ * To configure CORS for the clients API (or any Fastify API), you should use the official Fastify CORS plugin.
+ * 
+ * Example (in your main server file, e.g., app.js or server.js):
+ * 
+ * const fastify = require('fastify')();
+ * const fastifyCors = require('@fastify/cors');
+ * 
+ * // Register CORS with your desired options
+ * fastify.register(fastifyCors, {
+ *   origin: true, // or specify allowed origins
+ *   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+ *   credentials: true
+ * });
+ * 
+ * // Then register your routes, e.g.:
+ * fastify.register(require('./routes/clients'));
+ * 
+ * For more details, see: https://fastify.dev/docs/latest/Reference/CORS/
+ * 
+ * This file (roleMiddleware.js) only contains user/role authorization middleware.
+ */
+
 const User = require('../models/User');
 
-// Middleware pour vérifier si l'utilisateur est actif
+// Middleware to check if the user is active
 const checkActiveUser = async (request, reply) => {
   try {
     const userId = request.user.id;
@@ -8,20 +33,20 @@ const checkActiveUser = async (request, reply) => {
     
     if (!user || !user.isActif) {
       return reply.code(403).send({ 
-        error: 'Compte utilisateur désactivé' 
+        error: 'User account is disabled' 
       });
     }
     
-    // Ajouter les infos utilisateur complètes à la requête
+    // Add the complete user information to the request
     request.userDetails = user;
   } catch (err) {
     return reply.code(500).send({ 
-      error: 'Erreur lors de la vérification du statut utilisateur' 
+      error: 'Error checking user status' 
     });
   }
 };
 
-// Middleware pour vérifier si l'utilisateur est administrateur
+// Middleware to check if the user is an admin
 const requireAdmin = async (request, reply) => {
   try {
     const userId = request.user.id;
@@ -29,26 +54,26 @@ const requireAdmin = async (request, reply) => {
     
     if (!user || !user.isActif) {
       return reply.code(403).send({ 
-        error: 'Compte utilisateur désactivé' 
+        error: 'User account is disabled' 
       });
     }
     
     if (user.role !== 'admin') {
       return reply.code(403).send({ 
-        error: 'Accès autorisé aux administrateurs uniquement' 
+        error: 'Access authorized to administrators only' 
       });
     }
     
-    // Ajouter les infos utilisateur complètes à la requête
+    // Add the complete user information to the request
     request.userDetails = user;
   } catch (err) {
     return reply.code(500).send({ 
-      error: 'Erreur lors de la vérification des permissions' 
+      error: 'Error checking permissions' 
     });
   }
 };
 
-// Middleware pour vérifier un rôle spécifique
+// Middleware to check a specific role
 const requireRole = (role) => {
   return async (request, reply) => {
     try {
@@ -57,20 +82,20 @@ const requireRole = (role) => {
       
       if (!user || !user.isActif) {
         return reply.code(403).send({ 
-          error: 'Compte utilisateur désactivé' 
+          error: 'User account is disabled' 
         });
       }
       
       if (user.role !== role) {
         return reply.code(403).send({ 
-          error: `Accès autorisé au rôle ${role} uniquement` 
+          error: `Access authorized to the role ${role} only` 
         });
       }
       
       request.userDetails = user;
     } catch (err) {
       return reply.code(500).send({ 
-        error: 'Erreur lors de la vérification des permissions' 
+        error: 'Error checking permissions' 
       });
     }
   };

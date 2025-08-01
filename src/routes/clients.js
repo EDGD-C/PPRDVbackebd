@@ -198,10 +198,10 @@ module.exports = async function (fastify, opts) {
         security: [{ Bearer: [] }],
         params: {
           type: 'object',
+          required: ['id'],
           properties: {
-            id: { type: 'integer', description: 'Client id' }
-          },
-          required: ['id']
+            id: { type: 'string', format: 'uuid', description: 'Client uuid' }
+          }
         },
         body: {
           type: 'object',
@@ -231,13 +231,19 @@ module.exports = async function (fastify, opts) {
       }
     }, async (request, reply) => {
       try {
-        const client = await clientController.updateClient(request.params.id, request.body);
-        if (!client) return reply.code(404).send({ error: 'Client non trouvé' });
+        const uuid = request.params.id;
+        const updatedClient = await clientController.updateClient(uuid, request.body);
+        if (!updatedClient) {
+          return reply.code(404).send({ error: 'Client not found' });
+        }
         reply.send({ 
-          message: 'Client mis à jour avec succès',
-          client
+          message: 'Client updated successfully',
+          client: updatedClient
         });
       } catch (err) {
+        // CORS errors are usually handled at the server config/middleware level, not here.
+        // But for debugging, you can log the error.
+        request.log.error(err);
         reply.code(400).send({ error: err.message });
       }
     });
@@ -252,7 +258,7 @@ module.exports = async function (fastify, opts) {
         params: {
           type: 'object',
           properties: {
-            id: { type: 'integer', description: 'Client id' }
+            id: { type: 'string', description: 'Client id', format: 'uuid' }
           },
           required: ['id']
         },
@@ -269,9 +275,10 @@ module.exports = async function (fastify, opts) {
       }
     }, async (request, reply) => {
       try {
-        const result = await clientController.deleteClient(request.params.id);
-        if (!result) return reply.code(404).send({ error: 'Client non trouvé' });
-        reply.send({ message: 'Client supprimé avec succès' });
+        const uuid = request.params.id;
+        const result = await clientController.deleteClient(uuid);
+        if (!result) return reply.code(404).send({ error: 'Client not found' });
+        reply.send({ message: 'Client deleted successfully' });
       } catch (err) {
         reply.code(400).send({ error: err.message });
       }
@@ -287,7 +294,7 @@ module.exports = async function (fastify, opts) {
         params: {
           type: 'object',
           properties: {
-            id: { type: 'integer', description: 'Client id' }
+            id: { type: 'string', description: 'Client id', format: 'uuid' }
           },
           required: ['id']
         },
@@ -297,31 +304,17 @@ module.exports = async function (fastify, opts) {
             type: 'object',
             properties: {
               message: { type: 'string' },
-              client: {
-                type: 'object',
-                properties: {
-                  id: { type: 'integer' },
-                  uuid: { type: 'string' },
-                  nom: { type: 'string' },
-                  isActif: { type: 'boolean' }
-                }
-              }
             }
           }
         }
       }
     }, async (request, reply) => {
       try {
-        const client = await clientController.deactivateClient(request.params.id);
-        if (!client) return reply.code(404).send({ error: 'Client non trouvé' });
+        const uuid = request.params.id;
+        const client = await clientController.deactivateClient(uuid);
+        if (!client) return reply.code(404).send({ error: 'Client not found' });
         reply.send({ 
           message: 'Client deactivated successfully',
-          client: {
-            id: client.id,
-            uuid: client.uuid,
-            nom: client.nom,
-            isActif: client.isActif
-          }
         });
       } catch (err) {
         reply.code(400).send({ error: err.message });
@@ -338,7 +331,7 @@ module.exports = async function (fastify, opts) {
         params: {
           type: 'object',
           properties: {
-            id: { type: 'integer', description: 'Client id' }
+            id: { type: 'string', description: 'Client id', format: 'uuid' }
           },
           required: ['id']
         },
@@ -348,15 +341,6 @@ module.exports = async function (fastify, opts) {
             type: 'object',
             properties: {
               message: { type: 'string' },
-              client: {
-                type: 'object',
-                properties: {
-                  id: { type: 'integer' },
-                  uuid: { type: 'string' },
-                  nom: { type: 'string' },
-                  isActif: { type: 'boolean' }
-                }
-              }
             }
           }
         }
@@ -367,12 +351,6 @@ module.exports = async function (fastify, opts) {
         if (!client) return reply.code(404).send({ error: 'Client non trouvé' });
         reply.send({ 
           message: 'Client activated successfully',
-          client: {
-            id: client.id,
-            uuid: client.uuid,
-            nom: client.nom,
-            isActif: client.isActif
-          }
         });
       } catch (err) {
         reply.code(400).send({ error: err.message });

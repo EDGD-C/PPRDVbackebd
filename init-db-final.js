@@ -54,22 +54,44 @@ async function initDatabase() {
     // Créer des clients de démonstration
     console.log('Création de clients de démonstration...');
     
-    await Client.bulkCreate([
+    // Hash du mot de passe par défaut pour les clients
+    const defaultClientPassword = await bcrypt.hash('client123', 10);
+    
+    // Créer les utilisateurs clients
+    const clientUsers = await User.bulkCreate([
       {
-        nom: 'Client 1',
+        username: 'client1@example.com',
         email: 'client1@example.com',
-        nomEntreprise: 'Entreprise Client 1',
-        description: 'Un client de démonstration',
-        entrepriseId: entreprises[0].id,
-        isActif: true
+        password: defaultClientPassword,
+        role: 'client',
+        isActif: true,
+        isFirstLogin: true
       },
       {
-        nom: 'Client 2',
+        username: 'client2@example.com',
         email: 'client2@example.com',
+        password: defaultClientPassword,
+        role: 'client',
+        isActif: true,
+        isFirstLogin: true
+      }
+    ]);
+    
+    // Créer les profils clients
+    await Client.bulkCreate([
+      {
+        userId: clientUsers[0].id,
+        nom: 'Client 1',
+        nomEntreprise: 'Entreprise Client 1',
+        entrepriseId: entreprises[0].id,
+        description: 'Un client de démonstration'
+      },
+      {
+        userId: clientUsers[1].id,
+        nom: 'Client 2',
         nomEntreprise: 'Entreprise Client 2',
-        description: 'Un autre client de démonstration',
         entrepriseId: entreprises[1].id,
-        isActif: true
+        description: 'Un autre client de démonstration'
       }
     ]);
     

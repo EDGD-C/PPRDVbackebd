@@ -29,8 +29,13 @@ const User = sequelize.define('User', {
     allowNull: false,
   },
   role: {
-    type: DataTypes.ENUM('user', 'admin'),
-    defaultValue: 'user',
+    type: DataTypes.ENUM('admin', 'client'),
+    defaultValue: 'client',
+    allowNull: false,
+  },
+  isFirstLogin: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
     allowNull: false,
   },
   isActif: {
@@ -57,8 +62,16 @@ User.prototype.isAdmin = function() {
   return this.role === 'admin';
 };
 
+User.prototype.isClient = function() {
+  return this.role === 'client';
+};
+
 User.prototype.isActive = function() {
   return this.isActif;
+};
+
+User.prototype.needsPasswordChange = function() {
+  return this.isFirstLogin;
 };
 
 // class methods
@@ -72,6 +85,14 @@ User.findActiveUsers = function() {
 
 User.findAdmins = function() {
   return this.findAll({ where: { role: 'admin' } });
+};
+
+User.findClients = function() {
+  return this.findAll({ where: { role: 'client' } });
+};
+
+User.findActiveClients = function() {
+  return this.findAll({ where: { role: 'client', isActif: true } });
 };
 
 module.exports = User; 

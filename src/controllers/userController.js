@@ -7,8 +7,8 @@ exports.createUser = async (data) => {
     username: data.username,
     email: data.email,
     password: hashedPassword,
-    role: data.role || 'user', // Par défaut 'user'
-    isActif: data.isActif !== undefined ? data.isActif : true, // Par défaut true
+    role: data.role || 'user',
+    isActif: data.isActif !== undefined ? data.isActif : true,
   });
 };
 
@@ -40,11 +40,11 @@ exports.getAdmins = async () => {
   return User.findAdmins();
 };
 
-exports.updateUser = async (id, data) => {
-  const user = await User.findByPk(id);
+exports.updateUser = async (uuid, data) => {
+  const user = await User.findByUuid(uuid);
   if (!user) return null;
   
-  // Hash du nouveau mot de passe si fourni
+  // Hash the new password if provided
   if (data.password) {
     data.password = await bcrypt.hash(data.password, 10);
   }
@@ -65,15 +65,15 @@ exports.updateUserByUuid = async (uuid, data) => {
   return user;
 };
 
-exports.deleteUser = async (id) => {
-  const user = await User.findByPk(id);
+exports.deleteUser = async (uuid) => {
+  const user = await User.findByUuid(uuid);
   if (!user) return null;
   await user.destroy();
   return true;
 };
 
-exports.deactivateUser = async (id) => {
-  const user = await User.findByPk(id);
+exports.deactivateUser = async (uuid) => {
+  const user = await User.findByUuid(uuid);
   if (!user) return null;
   await user.update({ isActif: false });
   return user;

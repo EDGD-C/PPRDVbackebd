@@ -5,10 +5,8 @@ const { Op } = require('@sequelize/core');
 /**
  * Get all clients
  */
-exports.getAllClients = async (includeInactive = false) => {
-  const where = includeInactive ? {} : { isActif: true };
+exports.getAllClients = async () => {
   return Client.findAll({
-    where,
     include: [{ model: Entreprise, attributes: ['uuid', 'nom', 'siret'] }]
   });
 };
@@ -67,9 +65,10 @@ exports.createClient = async (data) => {
 /**
  * Update a client
  */
-exports.updateClient = async (id, data) => {
-  const client = await Client.findByPk(id);
-  
+exports.updateClient = async (uuid, data) => {
+  const client = await Client.findByUuid(uuid);
+
+  console.log('client22222222222222222222222222222222', client)
   if (!client) {
     return null;
   }
@@ -89,8 +88,8 @@ exports.updateClient = async (id, data) => {
 /**
  * Delete a client
  */
-exports.deleteClient = async (id) => {
-  const client = await Client.findByPk(id);
+exports.deleteClient = async (uuid) => {
+  const client = await Client.findByUuid(uuid);
   
   if (!client) {
     return false;
@@ -103,8 +102,8 @@ exports.deleteClient = async (id) => {
 /**
  * Deactivate a client
  */
-exports.deactivateClient = async (id) => {
-  const client = await Client.findByPk(id);
+exports.deactivateClient = async (uuid) => {
+  const client = await Client.findByUuid(uuid);
   
   if (!client) {
     return null;
@@ -118,8 +117,8 @@ exports.deactivateClient = async (id) => {
 /**
  * Activate a client
  */
-exports.activateClient = async (id) => {
-  const client = await Client.findByPk(id);
+exports.activateClient = async (uuid) => {
+  const client = await Client.findByUuid(uuid);
   
   if (!client) {
     return null;

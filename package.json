@@ -8,11 +8,12 @@
   },
   "scripts": {
     "test": "node --test test/**/*.test.js",
-    "start": "node start.js",
+    "start": "node src/server.js",
     "dev": "node start.js",
     "server": "node src/server.js",
-    "init-db": "node init-db.js",
-    "create-db": "node create-database.js"
+    "init-db": "node init-db-final.js",
+    "create-db": "node init-db-final.js",
+    "test:auth": "node test-auth.js"
   },
   "keywords": [],
   "author": "",

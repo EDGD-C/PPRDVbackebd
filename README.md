@@ -54,7 +54,7 @@ Une API REST complète construite avec Fastify pour la gestion des rendez-vous, 
 
 4. **Initialiser la base de données**
    ```bash
-   node init-db.js
+   node init-db-final.js
    ```
 
 5. **Démarrer le serveur**
@@ -95,7 +95,7 @@ pprdv/
 │   │   └── clients.js          # Routes des clients
 │   └── server.js               # Point d'entrée de l'application
 ├── migrations/                 # Migrations de base de données
-├── init-db.js                 # Script d'initialisation
+├── init-db-final.js           # Script d'initialisation
 ├── package.json
 └── README.md
 ```
@@ -107,10 +107,19 @@ pprdv/
 - **Mot de passe**: admin123
 
 ### Endpoints d'authentification
+
+#### Administrateurs
 - `POST /api/auth/register` - Inscription d'un nouvel utilisateur
 - `POST /api/auth/login` - Connexion (JWT + session)
 - `POST /api/auth/logout` - Déconnexion
 - `GET /api/auth/session` - Informations de session
+
+#### Clients
+- `POST /api/client/login` - Connexion client avec email et mot de passe par défaut
+- `POST /api/client/change-password` - Changement de mot de passe client
+- `POST /api/client/logout` - Déconnexion client
+- `GET /api/client/session` - Informations de session client
+- `POST /api/admin/client/reset-password/:clientId` - Réinitialisation du mot de passe client (Admin)
 
 ## 📖 API Documentation
 
@@ -145,11 +154,27 @@ Une fois le serveur démarré, la documentation Swagger est disponible à :
 - `description` - Description
 - `entrepriseId` - Référence vers l'entreprise
 - `isActif` - Statut actif/inactif
+- `password` - Mot de passe hashé (par défaut: "client123")
+- `isFirstLogin` - Indique si c'est la première connexion
 
 ## 🔧 Scripts Disponibles
 
-- `node init-db.js` - Initialise la base de données avec les données de démonstration
+- `node init-db-final.js` - Initialise la base de données avec les données de démonstration
 - `node src/server.js` - Démarre le serveur de développement
+
+## 🔐 Workflow d'authentification Client
+
+### Connexion initiale
+1. Le client se connecte avec son email et le mot de passe par défaut (`client123`)
+2. Le système vérifie si `isFirstLogin` est `true`
+3. Si c'est la première connexion, le client doit changer son mot de passe
+4. Le client utilise l'endpoint `/api/client/change-password` pour définir un nouveau mot de passe
+5. Une fois le mot de passe changé, `isFirstLogin` devient `false`
+
+### Réinitialisation du mot de passe
+- Un administrateur peut réinitialiser le mot de passe d'un client vers la valeur par défaut
+- Utilise l'endpoint `/api/admin/client/reset-password/:clientId`
+- Le client devra à nouveau changer son mot de passe lors de la prochaine connexion
 
 ## 🚨 Sécurité
 
@@ -159,6 +184,7 @@ Une fois le serveur démarré, la documentation Swagger est disponible à :
 - Validation des entrées avec Fastify
 - Contrôle d'accès basé sur les rôles
 - CORS configuré
+- Mot de passe par défaut pour les clients avec obligation de changement
 
 ## 📝 Notes de Développement
 

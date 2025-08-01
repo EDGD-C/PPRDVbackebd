@@ -5,7 +5,6 @@ module.exports = async function (fastify, opts) {
   const entrepriseSchema = {
     type: 'object',
     properties: {
-      id: { type: 'integer' },
       uuid: { type: 'string', format: 'uuid' },
       nom: { type: 'string' },
       description: { type: 'string' },
@@ -228,18 +227,18 @@ module.exports = async function (fastify, opts) {
     });
 
     // Mettre à jour une entreprise
-    fastify.put('/:id', {
+    fastify.put('/:uuid', {
       schema: {
         tags: ['Entreprises'],
-        summary: 'Modifier une entreprise',
-        description: 'Mettre à jour les informations d\'une entreprise',
+        summary: 'Update an entreprise',
+        description: 'Update an entreprise',
         security: [{ Bearer: [] }],
         params: {
           type: 'object',
           properties: {
-            id: { type: 'integer', description: 'ID de l\'entreprise' }
+            uuid: { type: 'string', format: 'uuid', description: 'UUID of the entreprise' }
           },
-          required: ['id']
+          required: ['uuid']
         },
         body: {
           type: 'object',
@@ -251,7 +250,7 @@ module.exports = async function (fastify, opts) {
         },
         response: {
           200: {
-            description: 'Entreprise mise à jour avec succès',
+            description: 'Entreprise updated successfully',
             type: 'object',
             properties: {
               message: { type: 'string' },
@@ -259,17 +258,17 @@ module.exports = async function (fastify, opts) {
             }
           },
           404: {
-            description: 'Entreprise non trouvée',
+            description: 'Entreprise not found',
             ...errorSchema
           }
         }
       }
     }, async (request, reply) => {
       try {
-        const entreprise = await entrepriseController.updateEntreprise(request.params.id, request.body);
+        const entreprise = await entrepriseController.updateEntreprise(request.params.uuid, request.body);
         if (!entreprise) return reply.code(404).send({ error: 'Entreprise non trouvée' });
         reply.send({ 
-          message: 'Entreprise mise à jour avec succès',
+          message: 'Entreprise updated successfully',
           entreprise
         });
       } catch (err) {
@@ -281,23 +280,23 @@ module.exports = async function (fastify, opts) {
     fastify.delete('/:id', {
       schema: {
         tags: ['Entreprises'],
-        summary: 'Supprimer une entreprise',
-        description: 'Supprimer définitivement une entreprise',
+        summary: 'Delete an entreprise',
+        description: 'Delete an entreprise',
         security: [{ Bearer: [] }],
         params: {
           type: 'object',
           properties: {
-            id: { type: 'integer', description: 'ID de l\'entreprise' }
+            id: { type: 'integer', description: 'ID of the entreprise' }
           },
           required: ['id']
         },
         response: {
           200: {
-            description: 'Entreprise supprimée avec succès',
+            description: 'Entreprise deleted successfully',
             ...successSchema
           },
           404: {
-            description: 'Entreprise non trouvée',
+            description: 'Entreprise not found',
             ...errorSchema
           }
         }
@@ -305,8 +304,8 @@ module.exports = async function (fastify, opts) {
     }, async (request, reply) => {
       try {
         const result = await entrepriseController.deleteEntreprise(request.params.id);
-        if (!result) return reply.code(404).send({ error: 'Entreprise non trouvée' });
-        reply.send({ message: 'Entreprise supprimée avec succès' });
+        if (!result) return reply.code(404).send({ error: 'Entreprise not found' });
+        reply.send({ message: 'Entreprise deleted successfully' });
       } catch (err) {
         reply.code(400).send({ error: err.message });
       }
