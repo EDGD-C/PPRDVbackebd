@@ -57,7 +57,7 @@ exports.createClient = async (data) => {
     email: data.email,
     nomEntreprise: data.nomEntreprise || null,
     description: data.description || null,
-    entrepriseId: data.enterpriseUuid || null,
+    entrepriseId: data.entrepriseId || null,
     isActif: data.isActif !== undefined ? data.isActif : true
   });
 };
@@ -86,7 +86,7 @@ exports.updateClient = async (uuid, data) => {
 };
 
 /**
- * Delete a client
+ * Delete a client (and associated user)
  */
 exports.deleteClient = async (uuid) => {
   const client = await Client.findByUuid(uuid);
@@ -95,8 +95,29 @@ exports.deleteClient = async (uuid) => {
     return false;
   }
   
-  await client.destroy();
-  return true;
+  // Find and delete the associated user
+  const User = require('../models/User');
+  const user = await User.findByPk(client.userId);
+  
+  // Delete both client and user in a transaction
+  const sequelize = require('../config/database');
+  const transaction = await sequelize.startUnmanagedTransaction();
+  
+  try {
+    // Delete client first (due to foreign key constraint)
+    await client.destroy({ transaction });
+    
+    // Delete associated user
+    if (user) {
+      await user.destroy({ transaction });
+    }
+    
+    await transaction.commit();
+    return true;
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
 };
 
 /**

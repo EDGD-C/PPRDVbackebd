@@ -143,52 +143,6 @@ module.exports = async function (fastify, opts) {
       reply.send(clients);
     });
 
-    // Create a new client
-    fastify.post('/', {
-      schema: {
-        tags: ['Clients'],
-        summary: 'Create a client',
-        description: 'Create a new client',
-        security: [{ Bearer: [] }],
-        body: {
-          type: 'object',
-          required: ['nom', 'email'],
-          properties: {
-            nom: { type: 'string' },
-            email: { type: 'string', format: 'email' },
-            nomEntreprise: { type: 'string' },
-            description: { type: 'string' },
-            entrepriseId: { type: 'integer' },
-            isActif: { type: 'boolean', default: true }
-          }
-        },
-        response: {
-          201: {
-            description: 'Client created successfully',
-            type: 'object',
-            properties: {
-              message: { type: 'string' },
-              client: clientSchema
-            }
-          },
-          400: {
-            description: 'Validation error',
-            ...errorSchema
-          }
-        }
-      }
-    }, async (request, reply) => {
-      try {
-        const client = await clientController.createClient(request.body);
-        reply.code(201).send({ 
-          message: 'Client created successfully',
-          client
-        });
-      } catch (err) {
-        reply.code(400).send({ error: err.message });
-      }
-    });
-
     // Update a client
     fastify.put('/:id', {
       schema: {
