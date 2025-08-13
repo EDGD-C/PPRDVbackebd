@@ -67,6 +67,7 @@ module.exports = async function (fastify, opts) {
       }
     );
 
+
     // Get an entreprise
     fastify.get(
       "/:id",
@@ -282,12 +283,14 @@ module.exports = async function (fastify, opts) {
       },
       async (request, reply) => {
         try {
+
           const id = request.params.id;
           if (!id) {
             return reply
               .code(400)
               .send({ error: "Missing entreprise id in request parameters" });
           }
+
           const entreprise = await entrepriseController.updateEntreprise(
             id,
             request.body
@@ -320,6 +323,7 @@ module.exports = async function (fastify, opts) {
               id: {
                 type: "integer",
                 description: "Entreprise ID",
+
                 format: "uuid",
               },
             },
