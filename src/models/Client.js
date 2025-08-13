@@ -9,9 +9,9 @@ const Client = sequelize.define('Client', {
   },
   uuid: {
     type: DataTypes.UUID,
-    defaultValue: sql.uuidV4,
     allowNull: false,
     unique: true,
+    // No defaultValue - will be set manually to match User UUID
   },
   nom: {
     type: DataTypes.STRING,

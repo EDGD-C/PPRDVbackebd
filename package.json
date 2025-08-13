@@ -13,7 +13,8 @@
     "server": "node src/server.js",
     "init-db": "node init-db-final.js",
     "create-db": "node init-db-final.js",
-    "test:auth": "node test-auth.js"
+    "test:auth": "node test-auth.js",
+    "reset-db": "node reset-db.js"
   },
   "keywords": [],
   "author": "",

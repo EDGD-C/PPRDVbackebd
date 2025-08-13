@@ -39,8 +39,13 @@ module.exports = {
         allowNull: false,
       },
       role: {
-        type: DataTypes.ENUM('user', 'admin'),
-        defaultValue: 'user',
+        type: DataTypes.ENUM('admin', 'client'),
+        defaultValue: 'client',
+        allowNull: false,
+      },
+      isFirstLogin: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
         allowNull: false,
       },
       isActif: {
@@ -107,18 +112,24 @@ module.exports = {
       },
       uuid: {
         type: DataTypes.UUID,
-        defaultValue: sql.uuidV4,
         allowNull: false,
         unique: true,
+        // No defaultValue - will be set manually to match User UUID
+      },
+      userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        unique: true,
+        references: {
+          model: 'users',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
       },
       nom: {
         type: DataTypes.STRING,
         allowNull: false,
-      },
-      email: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
       },
       nomEntreprise: {
         type: DataTypes.STRING,

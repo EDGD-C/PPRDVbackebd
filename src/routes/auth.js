@@ -56,16 +56,19 @@ module.exports = async function (fastify, opts) {
           password: { type: 'string' }
         }
       },
-      response: {
-        200: {
-          description: 'Login successful',
-          type: 'object',
-          properties: {
-            message: { type: 'string' },
-            token: { type: 'string' },
-            needsPasswordChange: { type: 'boolean' }
-          }
-        },
+                    response: {
+         200: {
+           description: 'Login successful',
+           type: 'object',
+           properties: {
+             message: { type: 'string' },
+             token: { type: 'string' },
+             user: {
+               oneOf: [adminSchema, clientSchema]
+             },
+             needsPasswordChange: { type: 'boolean' }
+           }
+         },
         401: {
           description: 'Invalid credentials or inactive account',
           ...errorSchema
@@ -92,85 +95,23 @@ module.exports = async function (fastify, opts) {
       
       reply.send({ 
         message: 'Login successful',
-        token
+        token,
+        user: userData,
+        needsPasswordChange: user.isClient() && user.isFirstLogin
       });
     } catch (err) {
       reply.code(401).send({ error: err.message });
     }
   });
 
-  // Register new admin (admin only)
-  // fastify.post('/register-admin', {
-  //   schema: {
-  //     tags: ['Authentication'],
-  //     summary: 'Register new admin',
-  //     description: 'Register a new admin user (requires admin privileges)',
-  //     body: {
-  //       type: 'object',
-  //       required: ['username', 'email', 'password'],
-  //       properties: {
-  //         username: { type: 'string', minLength: 3, maxLength: 50 },
-  //         email: { type: 'string', format: 'email' },
-  //         password: { type: 'string', minLength: 6 } 
-  //       }
-  //     },
-  //     response: {
-  //       201: {
-  //         description: 'Admin created successfully',
-  //         type: 'object',
-  //         properties: {
-  //           message: { type: 'string' },
-  //           admin: adminSchema
-  //         }
-  //       },
-  //       400: {
-  //         description: 'Validation error',
-  //         ...errorSchema
-  //       },
-  //       401: {
-  //         description: 'Unauthorized - Admin access required',
-  //         ...errorSchema
-  //       }
-  //     }
-  //   }
-  // }, async (request, reply) => {
-  //   // Check if user is authenticated and is admin
-  //   const userData = request.session.get('user');
-  //   if (!userData || userData.role !== 'admin') {
-  //     return reply.code(401).send({ error: 'Admin access required' });
-  //   }
-
-  //   const { username, email, password } = request.body;
-    
-  //   try {
-  //     const admin = await AuthController.registerAdmin({
-  //       username,
-  //       email,
-  //       password,
-  //       currentAdminId: userData.id
-  //     });
-
-  //     const adminData = await AuthController.prepareUserData(admin);
-      
-  //     reply.code(201).send({ 
-  //       message: 'Admin created successfully',
-  //       admin: adminData
-  //     });
-  //   } catch (err) {
-  //     if (err.message.includes('Admin privileges required')) {
-  //       reply.code(401).send({ error: err.message });
-  //     } else {
-  //       reply.code(400).send({ error: err.message });
-  //     }
-  //   }
-  // });
-
-  // Create new client (admin only)
+    // Create new client (admin only)
   fastify.post('/create-client', {
+    preHandler: [fastify.authenticate, fastify.requireAdmin],
     schema: {
       tags: ['Authentication'],
       summary: 'Create new client',
       description: 'Create a new client user (requires admin privileges)',
+      security: [{ Bearer: [] }],
       body: {
         type: 'object',
         required: ['nom', 'email'],
@@ -204,7 +145,7 @@ module.exports = async function (fastify, opts) {
     }
   }, async (request, reply) => {
     // Check if user is authenticated and is admin
-    const userData = request.session.get('user');
+    const userData = request.user; // Use JWT token instead of session
     if (!userData || userData.role !== 'admin') {
       return reply.code(401).send({ error: 'Admin access required' });
     }
