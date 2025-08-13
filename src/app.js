@@ -36,6 +36,9 @@ fastify.register(require('@fastify/formbody'))
 fastify.register(require('./plugins/auth')) // JWT & authenticate
 fastify.register(require('./plugins/swagger')) // Swagger documentation
 
+// Register mailer plugin
+fastify.register(require('./plugins/mailer'))
+
 // Register routes
 fastify.register(require('./routes/auth'), { prefix: '/api/auth' })
 fastify.register(require('./routes/users'), { prefix: '/api/users' })

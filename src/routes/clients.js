@@ -86,6 +86,10 @@ module.exports = async function (fastify, opts) {
     });
     
     // Get client by id 
+    // L'utilisation de '/id/:uuid' au lieu de simplement '/:uuid' permet d'éviter des conflits de routes.
+    // Par exemple, si d'autres routes existent comme '/search/:term' ou '/active', utiliser '/:uuid' pourrait provoquer des collisions
+    // car Fastify ne saurait pas si le paramètre correspond à un UUID ou à un autre type de paramètre.
+    // En ajoutant le préfixe 'id', on rend la route plus explicite et on évite ces ambiguïtés.
     fastify.get('/id/:uuid', {
       schema: {
         tags: ['Clients'],

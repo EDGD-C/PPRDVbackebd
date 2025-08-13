@@ -67,7 +67,7 @@ class AuthController {
   }
 
   // Create new client (admin only function)
-  static async createClient({ nom, email, nomEntreprise, entrepriseId, description, adminId }) {
+  static async createClient({ nom, email, nomEntreprise, entrepriseId, description, adminId, fastifyInstance }) {
     if (!nom || !email) {
       throw new Error('Name and email are required');
     }
@@ -128,6 +128,23 @@ class AuthController {
       // If client profile creation fails, delete the user to maintain consistency
       await clientUser.destroy();
       throw new Error(`Failed to create client profile: ${clientError.message}`);
+    }
+
+    // Send welcome email with credentials
+    if (fastifyInstance) {
+      try {
+        const clientData = {
+          nom: nom,
+          email: email,
+          nomEntreprise: nomEntreprise
+        };
+        
+        await fastifyInstance.sendClientWelcomeEmail(clientData, this.DEFAULT_CLIENT_PASSWORD);
+        console.log('✅ Welcome email sent to:', email);
+      } catch (emailError) {
+        console.error('⚠️ Warning: Failed to send welcome email:', emailError);
+        // Don't fail the client creation if email fails
+      }
     }
 
     // Return user with client profile

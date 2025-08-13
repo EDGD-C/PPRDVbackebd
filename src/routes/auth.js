@@ -159,7 +159,8 @@ module.exports = async function (fastify, opts) {
         nomEntreprise,
         entrepriseId,
         description,
-        adminId: userData.id
+        adminId: userData.id,
+        fastifyInstance: fastify
       });
 
       const clientData = await AuthController.prepareUserData(client);
@@ -330,7 +331,7 @@ module.exports = async function (fastify, opts) {
       params: {
         type: 'object',
         properties: {
-          clientId: { type: 'integer' }
+          clientId: { type: 'string', format: 'uuid' }
         }
       },
       response: {
