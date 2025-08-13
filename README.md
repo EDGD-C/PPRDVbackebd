@@ -106,6 +106,10 @@ pprdv/
 - **Email**: admin@example.com
 - **Mot de passe**: admin123
 
+### Templates Email
+- `src/templates/welcome-email.html.hbs` - Template HTML pour l'email de bienvenue
+- `src/templates/welcome-email.text.hbs` - Template texte pour l'email de bienvenue
+
 ### Endpoints d'authentification
 
 #### Administrateurs
@@ -161,6 +165,26 @@ Une fois le serveur démarré, la documentation Swagger est disponible à :
 
 - `node init-db-final.js` - Initialise la base de données avec les données de démonstration
 - `node src/server.js` - Démarre le serveur de développement
+
+## 📧 Configuration Email
+
+Pour activer l'envoi d'emails de bienvenue, configurez les variables d'environnement suivantes :
+
+```env
+# Configuration Email (Gmail)
+MAIL_FROM=your-email@gmail.com
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+APP_URL=http://localhost:3000
+```
+
+**Note importante pour Gmail :**
+- Activez l'authentification à 2 facteurs sur votre compte Gmail
+- Générez un "mot de passe d'application" dans les paramètres de sécurité
+- Utilisez ce mot de passe d'application comme `SMTP_PASS`
 
 ## 🔐 Workflow d'authentification Client
 

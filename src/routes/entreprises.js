@@ -63,98 +63,92 @@ module.exports = async function (fastify, opts) {
       reply.send(entreprises);
     });
 
-    // Obtenir une entreprise par ID
-    fastify.get('/:id', {
-      schema: {
-        tags: ['Entreprises'],
-        summary: 'Entreprise par ID',
-        description: 'Obtenir une entreprise spécifique par son ID',
-        security: [{ Bearer: [] }],
-        params: {
-          type: 'object',
-          properties: {
-            id: { type: 'integer', description: 'ID de l\'entreprise' }
+    // Get an entreprise
+    fastify.get(
+      "/:id",
+      {
+        schema: {
+          tags: ["Entreprises"],
+          summary: "Get an entreprise",
+          description: "Get an entreprise",
+          security: [{ Bearer: [] }],
+          params: {
+            type: "object",
+            properties: {
+              id: {
+                type: "string",
+                description: "Entreprise ID",
+                format: "uuid",
+              },
+            },
+            required: ["id"],
           },
-          required: ['id']
+          response: {
+            200: {
+              description: "Entreprise found",
+              ...entrepriseSchema,
+            },
+            404: {
+              description: "Entreprise not found",
+              ...errorSchema,
+            },
+          },
         },
-        response: {
-          200: {
-            description: 'Entreprise trouvée',
-            ...entrepriseSchema
-          },
-          404: {
-            description: 'Entreprise non trouvée',
-            ...errorSchema
-          }
+      },
+      async (request, reply) => {
+        const id = request.params.id;
+        if (!id) {
+          return reply
+            .code(400)
+            .send({ error: "Missing entreprise id in request parameters" });
         }
+        const entreprise = await entrepriseController.getEntrepriseByUuid(id);
+        if (!entreprise)
+          return reply.code(404).send({ error: "Entreprise not found" });
+        reply.send(entreprise);
       }
-    }, async (request, reply) => {
-      const entreprise = await entrepriseController.getEntrepriseById(request.params.id);
-      if (!entreprise) return reply.code(404).send({ error: 'Entreprise non trouvée' });
-      reply.send(entreprise);
-    });
+    );
 
-    // Obtenir une entreprise par UUID
-    fastify.get('/uuid/:uuid', {
-      schema: {
-        tags: ['Entreprises'],
-        summary: 'Entreprise par UUID',
-        description: 'Obtenir une entreprise spécifique par son UUID',
-        security: [{ Bearer: [] }],
-        params: {
-          type: 'object',
-          properties: {
-            uuid: { type: 'string', format: 'uuid', description: 'UUID de l\'entreprise' }
+    // Get an entreprise by siret
+    fastify.get(
+      "/siret/:siret",
+      {
+        schema: {
+          tags: ["Entreprises"],
+          summary: "Entreprise par SIRET",
+          description: "Obtenir une entreprise spécifique par son numéro SIRET",
+          security: [{ Bearer: [] }],
+          params: {
+            type: "object",
+            properties: {
+              siret: {
+                type: "string",
+                description: "Numéro SIRET de l'entreprise",
+              },
+            },
+            required: ["siret"],
           },
-          required: ['uuid']
+          response: {
+            200: {
+              description: "Entreprise trouvée",
+              ...entrepriseSchema,
+            },
+            404: {
+              description: "Entreprise non trouvée",
+              ...errorSchema,
+            },
+          },
         },
-        response: {
-          200: {
-            description: 'Entreprise trouvée',
-            ...entrepriseSchema
-          },
-          404: {
-            description: 'Entreprise non trouvée',
-            ...errorSchema
-          }
-        }
+      },
+      async (request, reply) => {
+        const entreprise = await entrepriseController.getEntrepriseBySiret(
+          request.params.siret
+        );
+        if (!entreprise)
+          return reply.code(404).send({ error: "Entreprise non trouvée" });
+        reply.send(entreprise);
       }
-    }, async (request, reply) => {
-      const entreprise = await entrepriseController.getEntrepriseByUuid(request.params.uuid);
-      if (!entreprise) return reply.code(404).send({ error: 'Entreprise non trouvée' });
-      reply.send(entreprise);
-    });
-
-    // Obtenir une entreprise par SIRET
-    fastify.get('/siret/:siret', {
-      schema: {
-        tags: ['Entreprises'],
-        summary: 'Entreprise par SIRET',
-        description: 'Obtenir une entreprise spécifique par son numéro SIRET',
-        security: [{ Bearer: [] }],
-        params: {
-          type: 'object',
-          properties: {
-            siret: { type: 'string', description: 'Numéro SIRET de l\'entreprise' }
-          },
-          required: ['siret']
-        },
-        response: {
-          200: {
-            description: 'Entreprise trouvée',
-            ...entrepriseSchema
-          },
-          404: {
-            description: 'Entreprise non trouvée',
-            ...errorSchema
-          }
-        }
-      }
-    }, async (request, reply) => {
-      const entreprise = await entrepriseController.getEntrepriseBySiret(request.params.siret);
-      if (!entreprise) return reply.code(404).send({ error: 'Entreprise non trouvée' });
-      reply.send(entreprise);
-    });
+    );
 
     // Rechercher des entreprises par nom
     fastify.get('/search/:term', {
@@ -226,89 +220,124 @@ module.exports = async function (fastify, opts) {
       }
     });
 
-    // Mettre à jour une entreprise
-    fastify.put('/:uuid', {
-      schema: {
-        tags: ['Entreprises'],
-        summary: 'Update an entreprise',
-        description: 'Update an entreprise',
-        security: [{ Bearer: [] }],
-        params: {
-          type: 'object',
-          properties: {
-            uuid: { type: 'string', format: 'uuid', description: 'UUID of the entreprise' }
-          },
-          required: ['uuid']
-        },
-        body: {
-          type: 'object',
-          properties: {
-            nom: { type: 'string' },
-            description: { type: 'string' },
-            siret: { type: 'string', minLength: 14, maxLength: 14 }
-          }
-        },
-        response: {
-          200: {
-            description: 'Entreprise updated successfully',
-            type: 'object',
+    // Update an entreprise
+    fastify.put(
+      "/:id",
+      {
+        schema: {
+          tags: ["Entreprises"],
+          summary: "Update an entreprise",
+          description: "Update an entreprise by its ID",
+          security: [{ Bearer: [] }],
+          params: {
+            type: "object",
             properties: {
-              message: { type: 'string' },
-              entreprise: entrepriseSchema
-            }
+              id: {
+                type: "string",
+                description: "Entreprise ID",
+                format: "uuid",
+              },
+            },
+            required: ["id"],
           },
-          404: {
-            description: 'Entreprise not found',
-            ...errorSchema
-          }
-        }
-      }
-    }, async (request, reply) => {
-      try {
-        const entreprise = await entrepriseController.updateEntreprise(request.params.uuid, request.body);
-        if (!entreprise) return reply.code(404).send({ error: 'Entreprise non trouvée' });
-        reply.send({ 
-          message: 'Entreprise updated successfully',
-          entreprise
-        });
-      } catch (err) {
-        reply.code(400).send({ error: err.message });
-      }
-    });
-
-    // Supprimer une entreprise
-    fastify.delete('/:id', {
-      schema: {
-        tags: ['Entreprises'],
-        summary: 'Delete an entreprise',
-        description: 'Delete an entreprise',
-        security: [{ Bearer: [] }],
-        params: {
-          type: 'object',
-          properties: {
-            id: { type: 'integer', description: 'ID of the entreprise' }
+          body: {
+            type: "object",
+            properties: {
+              nom: { type: "string" },
+              description: { type: "string" },
+              siret: { type: "string", minLength: 14, maxLength: 14 },
+            },
           },
-          required: ['id']
+          response: {
+            200: {
+              description: "Entreprise updated",
+              type: "object",
+              properties: {
+                message: { type: "string" },
+                entreprise: entrepriseSchema,
+              },
+            },
+            404: {
+              description: "Entreprise not found",
+              ...errorSchema,
+            },
+          },
         },
-        response: {
-          200: {
-            description: 'Entreprise deleted successfully',
-            ...successSchema
-          },
-          404: {
-            description: 'Entreprise not found',
-            ...errorSchema
+      },
+      async (request, reply) => {
+        try {
+          const id = request.params.id;
+          if (!id) {
+            return reply
+              .code(400)
+              .send({ error: "Missing entreprise id in request parameters" });
           }
+          const entreprise = await entrepriseController.updateEntreprise(
+            id,
+            request.body
+          );
+          if (!entreprise) {
+            return reply.code(404).send({ error: "Entreprise not found" });
+          }
+          reply.send({
+            message: "Entreprise updated successfully",
+            entreprise,
+          });
+        } catch (err) {
+          reply.code(400).send({ error: err.message });
         }
       }
-    }, async (request, reply) => {
-      try {
-        const result = await entrepriseController.deleteEntreprise(request.params.id);
-        if (!result) return reply.code(404).send({ error: 'Entreprise not found' });
-        reply.send({ message: 'Entreprise deleted successfully' });
-      } catch (err) {
-        reply.code(400).send({ error: err.message });
+    );
+
+    // Delete an entreprise
+    fastify.delete(
+      "/:id",
+      {
+        schema: {
+          tags: ["Entreprises"],
+          summary: "Delete an entreprise",
+          description: "Delete an entreprise",
+          security: [{ Bearer: [] }],
+          params: {
+            type: "object",
+            properties: {
+              id: {
+                type: "integer",
+                description: "Entreprise ID",
+                format: "uuid",
+              },
+            },
+            required: ["id"],
+          },
+          response: {
+            200: {
+              description: "Entreprise deleted",
+              ...successSchema,
+            },
+            404: {
+              description: "Entreprise not found",
+              ...errorSchema,
+            },
+          },
+        },
+      },
+      async (request, reply) => {
+        try {
+          const id = request.params.id;
+          if (!id) {
+            return reply
+              .code(400)
+              .send({ error: "Missing entreprise id in request parameters" });
+          }
+          const result = await entrepriseController.deleteEntreprise(id);
+          if (!result) {
+            return reply.code(404).send({ error: "Entreprise not found" });
+          }
+          reply.send({ message: "Entreprise deleted" });
+        } catch (err) {
+          reply.code(400).send({ error: err.message });
+        }
       }
-    });
+    );
   });
 };
