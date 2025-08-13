@@ -29,9 +29,6 @@ async function initDatabase() {
       isActif: true
     });
     
-    console.log('Administrateur par défaut créé avec succès.');
-    console.log('Email: admin@example.com');
-    console.log('Mot de passe: admin123');
 
     // Créer des entreprises de démonstration
     console.log('Création d\'entreprises de démonstration...');

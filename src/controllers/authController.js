@@ -93,15 +93,42 @@ class AuthController {
       isFirstLogin: true
     });
 
-    // Create client profile
+    // Create client profile with same UUID as user
     const Client = require('../models/Client');
-    const clientProfile = await Client.create({
+    
+    console.log('📝 Creating client profile with data:', {
+      uuid: clientUser.uuid,
       userId: clientUser.id,
       nom,
       nomEntreprise,
       entrepriseId,
       description
     });
+    
+    let clientProfile;
+    try {
+      clientProfile = await Client.create({
+        uuid: clientUser.uuid, // Use same UUID as user
+        userId: clientUser.id,
+        nom,
+        nomEntreprise,
+        entrepriseId,
+        description,
+        setLimit: null, // Default value
+        isActif: true
+      });
+      
+      console.log('✅ Client profile created:', {
+        id: clientProfile.id,
+        uuid: clientProfile.uuid,
+        nom: clientProfile.nom
+      });
+    } catch (clientError) {
+      console.error('❌ Error creating client profile:', clientError);
+      // If client profile creation fails, delete the user to maintain consistency
+      await clientUser.destroy();
+      throw new Error(`Failed to create client profile: ${clientError.message}`);
+    }
 
     // Send welcome email with credentials
     if (fastifyInstance) {

@@ -58,7 +58,7 @@ exports.createClient = async (data) => {
     nomEntreprise: data.nomEntreprise || null,
     description: data.description || null,
     entrepriseId: data.entrepriseId || null,
-    isActif: data.isActif !== undefined ? data.isActif : true,
+    isActif: data.isActif !== undefined ? data.isActif : true
   });
 };
 
@@ -85,7 +85,7 @@ exports.updateClient = async (uuid, data) => {
 };
 
 /**
- * Delete a client
+ * Delete a client (and associated user)
  */
 exports.deleteClient = async (uuid) => {
   // It's good practice to get the sequelize instance and models first
