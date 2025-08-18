@@ -15,8 +15,26 @@
 
 const fp = require('fastify-plugin');
 
+/**
+ * CORS configuration for Fastify.
+ * 
+ * In production, you should restrict the `origin` option to only allow trusted domains.
+ * You can also restrict CORS to only allow POST requests (e.g., for authentication endpoints)
+ * by using the `methods` option.
+ * 
+ * Example for production:
+ *   - Allow only POST requests from https://your-frontend.com
+ *   - Allow credentials if needed (for cookies/sessions)
+ * 
+ * For more options, see: https://fastify.dev/docs/latest/Reference/CORS/
+ */
+
 module.exports = fp(async function (fastify, opts) {
   fastify.register(require('@fastify/cors'), {
-    origin: true // Allow all origins in development
+    origin: process.env.NODE_ENV === 'production'
+      ? ['https://axelior.fr', 'https://www.axelior.fr']
+      : true, // Allow all origins in development
+    methods: ['POST'], // Only allow POST requests via CORS
+    credentials: true, // Allow cookies/auth headers if needed
   });
-}); 
+});
