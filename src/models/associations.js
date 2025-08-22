@@ -6,6 +6,8 @@
 const User = require('./User');
 const Client = require('./Client');
 const Entreprise = require('./Entreprise');
+// const RequestLimit = require('./RequestLimit');
+const PasswordReset = require('./PasswordReset');
 
 // Association entre User et Client (One-to-One)
 User.hasOne(Client, {
@@ -29,8 +31,44 @@ Entreprise.hasMany(Client, {
   as: 'clients'
 });
 
+// TODO: Uncomment when RequestLimit and PasswordReset tables are created
+// // Association entre Client et RequestLimit (One-to-Many)
+// Client.hasMany(RequestLimit, {
+//   foreignKey: 'clientId',
+//   as: 'requestLimits'
+// });
+
+// RequestLimit.belongsTo(Client, {
+//   foreignKey: 'clientId',
+//   as: 'client'
+// });
+
+// // Association entre User et RequestLimit (pour resetBy)
+// User.hasMany(RequestLimit, {
+//   foreignKey: 'resetBy',
+//   as: 'resetRequestLimits'
+// });
+
+// RequestLimit.belongsTo(User, {
+//   foreignKey: 'resetBy',
+//   as: 'resetByUser'
+// });
+
+// Association entre User et PasswordReset (One-to-Many)
+User.hasMany(PasswordReset, {
+  foreignKey: 'userId',
+  as: 'passwordResets'
+});
+
+PasswordReset.belongsTo(User, {
+  foreignKey: 'userId',
+  as: 'user'
+});
+
 module.exports = {
   User,
   Client,
-  Entreprise
+  Entreprise,
+  // RequestLimit,
+  PasswordReset
 };

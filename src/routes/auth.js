@@ -414,4 +414,141 @@ module.exports = async function (fastify, opts) {
       reply.code(400).send({ error: err.message });
     }
   });
+
+  // Request password   
+  fastify.post('/password-reset/request', {
+    schema: {
+      tags: ['Authentication'],
+      summary: 'Request password reset',
+      description: 'Request a password reset link for client accounts',
+      body: {
+        type: 'object',
+        required: ['email'],
+        properties: {
+          email: { type: 'string', format: 'email' }
+        }
+      },
+      response: {
+        200: {
+          description: 'Password reset request processed',
+          type: 'object',
+          properties: {
+            message: { type: 'string' },
+            success: { type: 'boolean' }
+          }
+        },
+        400: {
+          description: 'Validation error',
+          ...errorSchema
+        }
+      }
+    }
+  }, async (request, reply) => {
+    const { email } = request.body;
+    
+    if (!email) {
+      return reply.code(400).send({ error: 'Email is required' });
+    }
+
+    try {
+      const result = await AuthController.requestPasswordReset({
+        email,
+        ipAddress: request.ip,
+        userAgent: request.headers['user-agent'],
+        fastifyInstance: fastify
+      });
+      
+      reply.send(result);
+    } catch (err) {
+      reply.code(400).send({ error: err.message });
+    }
+  });
+
+  // Verify reset token
+  fastify.get('/password-reset/verify/:token', {
+    schema: {
+      tags: ['Authentication'],
+      summary: 'Verify password reset token',
+      description: 'Verify if a password reset token is valid',
+      params: {
+        type: 'object',
+        properties: {
+          token: { type: 'string' }
+        }
+      },
+      response: {
+        200: {
+          description: 'Token verification result',
+          type: 'object',
+          properties: {
+            isValid: { type: 'boolean' },
+            email: { type: 'string' },
+            expiresAt: { type: 'string', format: 'date-time' }
+          }
+        },
+        400: {
+          description: 'Invalid or expired token',
+          ...errorSchema
+        }
+      }
+    }
+  }, async (request, reply) => {
+    const { token } = request.params;
+    
+    try {
+      const result = await AuthController.verifyResetToken(token);
+      reply.send(result);
+    } catch (err) {
+      reply.code(400).send({ error: err.message });
+    }
+  });
+
+  // Reset password with token
+  fastify.post('/password-reset/confirm', {
+    schema: {
+      tags: ['Authentication'],
+      summary: 'Reset password with token',
+      description: 'Reset password using a valid reset token',
+      body: {
+        type: 'object',
+        required: ['token', 'newPassword'],
+        properties: {
+          token: { type: 'string' },
+          newPassword: { type: 'string', minLength: 6 }
+        }
+      },
+      response: {
+        200: {
+          description: 'Password reset successful',
+          type: 'object',
+          properties: {
+            message: { type: 'string' },
+            success: { type: 'boolean' }
+          }
+        },
+        400: {
+          description: 'Invalid token or validation error',
+          ...errorSchema
+        }
+      }
+    }
+  }, async (request, reply) => {
+    const { token, newPassword } = request.body;
+    
+    if (!token || !newPassword) {
+      return reply.code(400).send({ error: 'Token and new password are required' });
+    }
+
+    try {
+      await AuthController.resetPasswordWithToken({ token, newPassword });
+      
+      reply.send({ 
+        message: 'Password reset successfully. You can now login with your new password.',
+        success: true
+      });
+    } catch (err) {
+      reply.code(400).send({ error: err.message });
+    }
+  });
 }; 
+

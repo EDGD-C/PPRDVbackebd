@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const PasswordReset = require('../models/PasswordReset');
 
 class AuthController {
   // Default password for new clients
@@ -321,6 +322,146 @@ class AuthController {
         resolve(false);
       }
     });
+  }
+
+  // Request password reset - generates reset token
+  static async requestPasswordReset({ email, ipAddress, userAgent, fastifyInstance }) {
+    if (!email) {
+      throw new Error('Email is required');
+    }
+
+    // Find user by email (only clients can reset password this way)
+    const user = await User.findOne({ 
+      where: { 
+        email,
+        role: 'client'  // Only allow clients to use this feature
+      } 
+    });
+    
+    if (!user) {
+      // Don't reveal if user exists or not for security
+      return { 
+        message: 'If the email exists in our system, you will receive a password reset link.',
+        success: true 
+      };
+    }
+
+    // Check if user is active
+    if (!user.isActif) {
+      throw new Error('Account is deactivated');
+    }
+
+    try {
+      // Create reset token
+      const resetRecord = await PasswordReset.createResetToken(user.id, ipAddress, userAgent);
+      
+      // Send password reset email
+      if (fastifyInstance && fastifyInstance.sendPasswordResetEmail) {
+        try {
+          await fastifyInstance.sendPasswordResetEmail({
+            email: user.email,
+            username: user.username,
+            resetToken: resetRecord.token,
+            expiresAt: resetRecord.expiresAt
+          });
+        } catch (emailError) {
+          console.error('⚠️ Warning: Failed to send password reset email:', emailError);
+          // Continue execution - don't fail the reset request if email fails
+        }
+      }
+
+      return { 
+        message: 'If the email exists in our system, you will receive a password reset link.',
+        success: true 
+      };
+    } catch (error) {
+      console.error('Error creating password reset token:', error);
+      throw new Error('Unable to process password reset request');
+    }
+  }
+
+  // Reset password using token
+  static async resetPasswordWithToken({ token, newPassword }) {
+    if (!token || !newPassword) {
+      throw new Error('Reset token and new password are required');
+    }
+
+    // Validate new password
+    if (newPassword.length < 6) {
+      throw new Error('New password must be at least 6 characters long');
+    }
+
+    // Find valid reset token
+    const resetRecord = await PasswordReset.findValidToken(token);
+    if (!resetRecord) {
+      throw new Error('Invalid or expired reset token');
+    }
+
+    // Find user
+    const user = await User.findByPk(resetRecord.userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // Check if user is active
+    if (!user.isActif) {
+      throw new Error('Account is deactivated');
+    }
+
+    // Hash new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    try {
+      // Update user password and reset first login flag
+      await user.update({
+        password: hashedNewPassword,
+        isFirstLogin: false
+      });
+
+      // Mark reset token as used
+      await resetRecord.markAsUsed();
+
+      return user;
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      throw new Error('Unable to reset password');
+    }
+  }
+
+  // Verify reset token (without resetting password)
+  static async verifyResetToken(token) {
+    if (!token) {
+      throw new Error('Reset token is required');
+    }
+
+    const resetRecord = await PasswordReset.findValidToken(token);
+    if (!resetRecord) {
+      throw new Error('Invalid or expired reset token');
+    }
+
+    // Find user to get email for display
+    const user = await User.findByPk(resetRecord.userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    return {
+      isValid: true,
+      email: user.email,
+      expiresAt: resetRecord.expiresAt
+    };
+  }
+
+  // Clean up expired reset tokens (maintenance function)
+  static async cleanupExpiredResetTokens() {
+    try {
+      const deletedCount = await PasswordReset.cleanupExpiredTokens();
+      console.log(`🧹 Cleaned up ${deletedCount} expired password reset tokens`);
+      return deletedCount;
+    } catch (error) {
+      console.error('Error cleaning up expired reset tokens:', error);
+      throw error;
+    }
   }
 }
 

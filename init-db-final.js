@@ -77,6 +77,7 @@ async function initDatabase() {
     // Créer les profils clients
     await Client.bulkCreate([
       {
+        uuid: clientUsers[0].uuid,
         userId: clientUsers[0].id,
         nom: 'Client 1',
         nomEntreprise: 'Entreprise Client 1',
@@ -84,6 +85,7 @@ async function initDatabase() {
         description: 'Un client de démonstration'
       },
       {
+        uuid: clientUsers[1].uuid,
         userId: clientUsers[1].id,
         nom: 'Client 2',
         nomEntreprise: 'Entreprise Client 2',
