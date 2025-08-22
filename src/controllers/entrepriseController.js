@@ -76,8 +76,8 @@ exports.updateEntreprise = async (uuid, data) => {
 /**
  * Delete an entreprise
  */
-exports.deleteEntreprise = async (id) => {
-  const entreprise = await Entreprise.findByPk(id);
+exports.deleteEntreprise = async (uuid) => {
+  const entreprise = await Entreprise.findOne({ where: { uuid } });
 
   if (!entreprise) {
     return false;

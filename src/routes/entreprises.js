@@ -67,7 +67,6 @@ module.exports = async function (fastify, opts) {
       }
     );
 
-
     // Get an entreprise
     fastify.get(
       "/:id",
@@ -283,7 +282,6 @@ module.exports = async function (fastify, opts) {
       },
       async (request, reply) => {
         try {
-
           const id = request.params.id;
           if (!id) {
             return reply
@@ -321,9 +319,8 @@ module.exports = async function (fastify, opts) {
             type: "object",
             properties: {
               id: {
-                type: "integer",
+                type: "string",
                 description: "Entreprise ID",
-
                 format: "uuid",
               },
             },
