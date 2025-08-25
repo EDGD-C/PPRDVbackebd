@@ -11,6 +11,8 @@
     "start": "node src/server.js",
     "dev": "node start.js",
     "server": "node src/server.js",
+    "migrate": "node migrate.js",
+    "build": "node build.js",
     "init-db": "node init-db-final.js",
     "create-db": "node init-db-final.js",
     "test:auth": "node test-auth.js",

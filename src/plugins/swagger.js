@@ -1,74 +1,43 @@
+require('dotenv').config();
 const fp = require('fastify-plugin');
 
-module.exports = fp(async function (fastify, opts) {
-  // Configuration Swagger
+module.exports = fp(async function (fastify) {
+  const isProd = process.env.NODE_ENV === 'production';
+  const API_HOST = process.env.API_HOST || 'localhost';
+  const API_PORT = process.env.PORT || 3000;
+  const API_SCHEME = isProd ? 'https' : 'http';
+
   await fastify.register(require('@fastify/swagger'), {
     swagger: {
       info: {
         title: 'API Gestion Utilisateurs',
-        description: 'API complète pour la gestion des utilisateurs avec authentification JWT, rôles et statuts',
-        version: '1.0.0',
-        contact: {
-          name: 'Support API',
-          email: 'support@example.com'
-        }
+        description: 'API complète pour la gestion des utilisateurs',
+        version: '1.0.0'
       },
-      host: 'localhost:3000',
-      schemes: ['http'],
+      host: isProd ? API_HOST : `${API_HOST}:${API_PORT}`,  // ex: api.axelior.fr en prod
+      schemes: [API_SCHEME],                                 // https en prod
       consumes: ['application/json'],
       produces: ['application/json'],
       securityDefinitions: {
         Bearer: {
           type: 'apiKey',
           name: 'Authorization',
-          in: 'header',
-          description: 'Entrez le token JWT avec le préfixe Bearer. Exemple: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+          in: 'header'
         }
       },
-      security: [
-        {
-          Bearer: []
-        }
-      ],
+      security: [{ Bearer: [] }],
       tags: [
-        {
-          name: 'Authentication',
-          description: 'Endpoints pour l\'authentification et l\'enregistrement'
-        },
-        // {
-        //   name: 'Users',
-        //   description: 'Gestion des utilisateurs (routes protégées)'
-        // },
-        {
-          name: 'Admin',
-          description: 'Administration des utilisateurs (admin uniquement)'
-        },
-        {
-          name: 'Profile',
-          description: 'Gestion du profil utilisateur'
-        }
+        { name: 'Authentication', description: 'Auth & inscription' },
+        { name: 'Admin', description: 'Administration' },
+        { name: 'Profile', description: 'Profil' }
       ]
     }
   });
 
-  // Configuration Swagger UI
   await fastify.register(require('@fastify/swagger-ui'), {
     routePrefix: '/documentation',
-    uiConfig: {
-      docExpansion: 'list',
-      deepLinking: false,
-      defaultModelsExpandDepth: -1,
-      defaultModelExpandDepth: 1
-    },
-    uiHooks: {
-      onRequest: function (request, reply, next) { next() },
-      preHandler: function (request, reply, next) { next() }
-    },
-    staticCSP: true,
-    transformStaticCSP: (header) => header,
-    transformSpecification: (swaggerObject, request, reply) => { return swaggerObject },
-    transformSpecificationClone: true
+    staticCSP: true
   });
 
-  fastify.log.info('📚 Swagger documentation disponible sur: http://localhost:3000/documentation');
-}); 
+  fastify.log.info(`📚 Swagger: ${API_SCHEME}://${isProd ? API_HOST : API_HOST + ':' + API_PORT}/documentation`);
+});

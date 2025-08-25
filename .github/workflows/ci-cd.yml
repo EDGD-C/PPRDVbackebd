@@ -1,0 +1,48 @@
+name: CI/CD pipeline
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - main
+
+jobs: 
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up NodeJS
+              uses: actions/setup-node@v4
+              with:
+                node-version: '22'
+                cache: 'npm'
+
+            - name: Install dependencies
+              run: npm ci  
+
+            - name: Copy backend files
+              uses: appleboy/scp-action@v0.1.7
+              with:
+                host: ${{ secrets.VPS_IP }}
+                username: ${{ secrets.VPS_USER }}
+                key: ${{ secrets.SSH_PRIVATE_KEY }}
+                source: "src/**,package.json,package-lock.json,start.js,reset-db.js,build.js,init-db-final.js,init-db.js,migrate.js"
+                target: /var/www/clients/client1/web1/private/PPRDVbackebd
+                overwrite: true
+                strip_components: 0
+
+            - name: Reload PM2
+              uses: appleboy/ssh-action@v1.2.0
+              with:
+                host: ${{ secrets.VPS_IP }}
+                username: ${{ secrets.VPS_USER }}
+                key: ${{ secrets.SSH_PRIVATE_KEY }}
+                script: |
+                  pm2 reload pprdv-back || pm2 start server.js --name pprdv-back
+                  pm2 save
+              
