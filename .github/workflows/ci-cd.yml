@@ -25,6 +25,18 @@ jobs:
             - name: Install dependencies
               run: npm ci  
 
+            - name: Show SSH key fingerprint
+              if: github.event_name == 'push'
+              run: |
+                printf "%s" "$SSH_PRIVATE_KEY" > id.key
+                chmod 600 id.key
+                ssh-keygen -y -f id.key > id.key.pub
+                echo "Private key FP:"
+                ssh-keygen -lf id.key.pub -E sha256 || ssh-keygen -lf id.key.pub
+              env:
+                SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+
             - name: SSH sanity check
               if: github.event_name == 'push'
               uses: appleboy/ssh-action@v1.2.0
