@@ -37,7 +37,7 @@ jobs:
                 SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
 
-            - name: SSH sanity check
+            - name: SSH sanity chec
               if: github.event_name == 'push'
               uses: appleboy/ssh-action@v1.2.0
               with:
