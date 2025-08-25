@@ -25,6 +25,16 @@ jobs:
             - name: Install dependencies
               run: npm ci  
 
+            - name: SSH sanity check
+              if: github.event_name == 'push'
+              uses: appleboy/ssh-action@v1.2.0
+              with:
+                host: ${{ secrets.VPS_IP }}
+                username: ${{ secrets.VPS_USER }}
+                key: ${{ secrets.SSH_PRIVATE_KEY }}
+                # passphrase: ${{ secrets.SSH_PASSPHRASE }}   # si besoin
+                script: 'whoami && hostname'
+            
             - name: Copy backend files
               uses: appleboy/scp-action@v0.1.7
               with:
