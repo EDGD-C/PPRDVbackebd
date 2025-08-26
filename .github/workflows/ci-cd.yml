@@ -49,12 +49,13 @@ jobs:
           strip_components: 0
 
       - name: Reload PM2
-        if: github.event_name == 'push'
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_IP }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            export PATH=/var/www/clients/client1/web1/home/axe44ssl/.nvm/versions/node/v22.18.0/bin:$PATH
             pm2 reload pprdv-back || pm2 start server.js --name pprdv-back
             pm2 save
+        
