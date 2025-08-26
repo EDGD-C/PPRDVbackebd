@@ -30,9 +30,8 @@ jobs:
               run: |
                 printf "%s" "$SSH_PRIVATE_KEY" > id.key
                 chmod 600 id.key
-                ssh-keygen -y -f id.key > id.key.pub
+                ssh-keygen -lf id.key
                 echo "Private key FP:"
-                ssh-keygen -lf id.key.pub -E sha256 || ssh-keygen -lf id.key.pub
               env:
                 SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
