@@ -26,14 +26,15 @@ jobs:
               run: npm ci  
 
             - name: Show SSH key fingerprint
-              if: github.event_name == 'push'
               run: |
-                printf "%s" "$SSH_PRIVATE_KEY" > id.key
+                printf '%s' "$SSH_PRIVATE_KEY" > id.key
+                sed -i 's/\r$//' id.key      # enlève les \r Windows
+                grep -q "BEGIN .* PRIVATE KEY" id.key || (echo "clé invalide" && exit 1)
                 chmod 600 id.key
                 ssh-keygen -lf id.key
-                echo "Private key FP:"
               env:
                 SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+            
 
 
             - name: SSH sanity check
