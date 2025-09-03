@@ -34,11 +34,6 @@ const Client = sequelize.define('Client', {
     type: DataTypes.INTEGER,
     allowNull: true
   },
-  // Limite de requetes par jour
-  setLimit: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-  },
   isActif: {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
