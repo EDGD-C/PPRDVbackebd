@@ -38,8 +38,16 @@ const Client = sequelize.define('Client', {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
     allowNull: false,
+  },  // Limite de requetes par jour
+  limiteRequete: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
   },
-
+  // Requette actuel executer
+  nbRequetteActuel: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
 }, {
   timestamps: true,
   tableName: 'clients',
