@@ -47,7 +47,7 @@ const Client = sequelize.define('Client', {
   nbRequetteActuel: {
     type: DataTypes.INTEGER,
     allowNull: false,
-  },
+  }
 }, {
   timestamps: true,
   tableName: 'clients',

@@ -12,8 +12,8 @@ module.exports = async function (fastify, opts) {
       description: { type: 'string' },
       entrepriseUuid: { type: 'string', format: 'uuid' },
       isActif: { type: 'boolean' },
-      limiteRequete: { type: 'int'},
-      nbRequetteActuel:  {type: 'int'},
+      limiteRequete: { type: 'integer'},
+      nbRequetteActuel:  {type: 'integer'},
       createdAt: { type: 'string', format: 'date-time' },
       updatedAt: { type: 'string', format: 'date-time' },
       Entreprise: {
